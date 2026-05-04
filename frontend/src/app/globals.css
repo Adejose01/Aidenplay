@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+/* ============================================================
+   AIDEN PLAY — Sistema de Diseño Dark Mode / Neón
+   ============================================================ */
+
+@theme inline {
+  /* ── Paleta Dark ── */
+  --color-dark: #0a0a0f;
+  --color-dark-card: #151520;
+  --color-dark-lighter: #1c1c2e;
+
+  /* ── Neón Accent ── */
+  --color-neon-blue: #00e5ff;
+  --color-neon-purple: #b026ff;
+  --color-neon-pink: #ff007f;
+  --color-neon-green: #25D366;
+
+  /* ── Admin Panel ── */
+  --color-brand-bg: #121214;
+  --color-brand-card: #18181b;
+  --color-brand-border: #27272a;
+
+  /* ── Tipografía ── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Base Body ── */
+body {
+  background-color: var(--color-dark);
+  color: #ffffff;
+  background-image:
+    radial-gradient(circle at 15% 50%, rgba(176, 38, 255, 0.05), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.05), transparent 25%);
+}
+
+/* ── Utilidades de Gradiente Neón ── */
+.neon-text-gradient {
+  background: linear-gradient(to right, var(--color-neon-blue), var(--color-neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Bordes Neón con Hover ── */
+.neon-border {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.neon-border:hover {
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+  transform: translateY(-3px);
+}
+
+/* ── Botón Gradiente Neón ── */
+.btn-neon {
+  background: linear-gradient(45deg, var(--color-neon-blue), var(--color-neon-purple));
+  transition: opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-neon:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 15px rgba(176, 38, 255, 0.4);
+}
+
+/* ── Botón WhatsApp ── */
+.btn-whatsapp {
+  background-color: var(--color-neon-green);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.btn-whatsapp:hover {
+  background-color: #1ebe57;
+  box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+}
+
+/* ── Badge PlayStation ── */
+.ps-badge {
+  background: linear-gradient(135deg, #003791 0%, #0072CE 100%);
+}
+
+/* ── Animación de pulso suave para badges ── */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* ── Shimmer loading skeleton ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-dark-lighter) 25%,
+    rgba(255, 255, 255, 0.05) 50%,
+    var(--color-dark-lighter) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* ── Scrollbar personalizado ── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-dark-lighter);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.3);
+}

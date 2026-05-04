@@ -1,0 +1,173 @@
+[
+  {
+    "name": "products",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "title",
+        "type": "text",
+        "required": true,
+        "options": {
+          "min": 1,
+          "max": 200,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": 2000,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "category",
+        "type": "select",
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "PS4",
+            "PS5",
+            "PS_PLUS",
+            "STREAMING"
+          ]
+        }
+      },
+      {
+        "name": "account_type",
+        "type": "select",
+        "required": true,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "Primaria",
+            "Secundaria",
+            "Suscripción"
+          ]
+        }
+      },
+      {
+        "name": "price_ar",
+        "type": "number",
+        "required": true,
+        "options": {
+          "min": 0,
+          "max": null,
+          "noDecimal": false
+        }
+      },
+      {
+        "name": "price_rd",
+        "type": "number",
+        "required": true,
+        "options": {
+          "min": 0,
+          "max": null,
+          "noDecimal": false
+        }
+      },
+      {
+        "name": "cover_image",
+        "type": "file",
+        "required": false,
+        "options": {
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+            "image/gif",
+            "image/webp"
+          ],
+          "thumbs": [
+            "200x200",
+            "400x300",
+            "800x600"
+          ],
+          "protected": false
+        }
+      },
+      {
+        "name": "is_featured",
+        "type": "bool",
+        "required": false,
+        "options": {}
+      },
+      {
+        "name": "is_active",
+        "type": "bool",
+        "required": false,
+        "options": {}
+      }
+    ],
+    "indexes": [
+      "CREATE INDEX idx_products_category ON products (category)",
+      "CREATE INDEX idx_products_is_featured ON products (is_featured)",
+      "CREATE INDEX idx_products_is_active ON products (is_active)"
+    ],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null
+  },
+  {
+    "name": "site_settings",
+    "type": "base",
+    "system": false,
+    "schema": [
+      {
+        "name": "hero_title_line1",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": 100,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "hero_title_line2",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": 100,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "hero_subtitle",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": 500,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "hero_badge_text",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": 50,
+          "pattern": ""
+        }
+      }
+    ],
+    "indexes": [],
+    "listRule": "",
+    "viewRule": "",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null
+  }
+]

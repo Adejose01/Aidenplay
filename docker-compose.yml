@@ -1,0 +1,50 @@
+# ============================================================
+# AIDEN PLAY - Orquestador Docker Compose para Producción VPS
+# ============================================================
+
+version: "3.8"
+
+services:
+  # ── Backend: PocketBase ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aidenplay_backend
+    restart: unless-stopped
+    ports:
+      # Exponer solo localmente si usas proxy inverso (ej. Nginx o Cloudflare Tunnels)
+      # Cambiar a "8090:8090" si se quiere exponer directo al mundo
+      - "8090:8090"
+    volumes:
+      # CRÍTICO: Persistencia de datos de la base de datos (SQLite) y archivos subidos
+      - ./backend/pb_data:/pb/pb_data
+      - ./backend/pb_hooks:/pb/pb_hooks
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--spider", "http://localhost:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Frontend: Next.js 14 ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aidenplay_frontend
+    restart: unless-stopped
+    ports:
+      # Exponer puerto
+      - "3000:3000"
+    environment:
+      # URL pública (Navegador): En tu PC será localhost, en producción será tu dominio.
+      - NEXT_PUBLIC_PB_URL=http://localhost:8090
+      # URL interna (Docker/SSR): Next.js Server Components usarán esta ruta interna
+      - PB_INTERNAL_URL=http://backend:8090
+    depends_on:
+      backend:
+        condition: service_healthy
+
+# Notas para Producción (Proxy Inverso):
+# - Frontend: Apuntar tudominio.com a localhost:3000
+# - Backend: Apuntar api.tudominio.com a localhost:8090

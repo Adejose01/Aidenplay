@@ -13,6 +13,7 @@ import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import ProductGrid from "@/components/ProductGrid";
 import Footer from "@/components/Footer";
+import SearchBar from "@/components/SearchBar";
 
 import { getSiteSettings, getProductsByCategory, getFeaturedProducts } from "@/lib/pocketbase";
 
@@ -20,14 +21,10 @@ import { getSiteSettings, getProductsByCategory, getFeaturedProducts } from "@/l
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  // Fetch en paralelo para máximo rendimiento
-  const [settings, featured, streaming, ps5, ps4, psPlus] = await Promise.all([
+  // Fetch solo de lo necesario
+  const [settings, featured] = await Promise.all([
     getSiteSettings(),
     getFeaturedProducts(),
-    getProductsByCategory("STREAMING"),
-    getProductsByCategory("PS5"),
-    getProductsByCategory("PS4"),
-    getProductsByCategory("PS_PLUS"),
   ]);
 
   return (
@@ -41,41 +38,19 @@ export default async function HomePage() {
         {/* Categorías Rápidas */}
         <Categories />
 
-        {/* Sección: Productos Destacados */}
-        {featured.length > 0 && (
-          <ProductGrid
-            products={featured}
-            title="🔥 Destacados"
-            sectionId="catalogo"
-          />
-        )}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+          <SearchBar />
+        </div>
 
-        {/* Sección: Streaming */}
+        {/* Sección: OFERTAS DESTACADAS */}
         <ProductGrid
-          products={streaming}
-          title="Cuentas de Streaming"
-          sectionId="streaming"
-        />
-
-        {/* Sección: PS5 */}
-        <ProductGrid
-          products={ps5}
-          title="Juegos PS5"
-          sectionId="ps5"
-        />
-
-        {/* Sección: PS4 */}
-        <ProductGrid
-          products={ps4}
-          title="Juegos PS4"
-          sectionId="ps4"
-        />
-
-        {/* Sección: PS Plus */}
-        <ProductGrid
-          products={psPlus}
-          title="Suscripciones PS Plus"
-          sectionId="suscripciones"
+          products={featured}
+          title="OFERTAS DESTACADAS"
+          sectionId="catalogo"
+          rates={{
+            ars: settings?.exchange_rate_ars || 1415,
+            rd: settings?.exchange_rate_rd || 58
+          }}
         />
       </main>
 

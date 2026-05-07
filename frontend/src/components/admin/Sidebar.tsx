@@ -6,7 +6,12 @@ import { Gamepad2, LayoutDashboard, Settings, LogOut, Package } from "lucide-rea
 import { pb } from "@/lib/pocketbase";
 import { useRouter } from "next/navigation";
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -18,14 +23,28 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-brand-card border-r border-brand-border h-screen sticky top-0 flex flex-col hidden md:flex">
+    <>
+      {/* Overlay para móvil */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-brand-card border-r border-brand-border flex flex-col 
+        transition-transform duration-300 md:translate-x-0 md:static md:h-screen
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
       {/* Brand */}
-      <div className="h-16 flex items-center px-6 border-b border-brand-border">
-        <div className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-full bg-brand-bg border border-neon-purple flex items-center justify-center">
-            <Gamepad2 className="w-4 h-4 text-neon-blue" />
-          </div>
-          <span className="font-display font-bold text-white tracking-wider">AIDEN PLAY</span>
+      <div className="h-24 flex items-center justify-center border-b border-brand-border px-4">
+        <div className="relative w-full h-16 flex items-center justify-center">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="w-full h-full object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" 
+          />
         </div>
       </div>
 
@@ -66,5 +85,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

@@ -9,6 +9,14 @@ import Link from "next/link";
 
 const CATEGORIES: CategoryInfo[] = [
   {
+    slug: "STREAMING",
+    label: "STREAMING",
+    sublabel: "Cuentas",
+    icon: "📺",
+    colorClass: "text-neon-pink",
+    borderHover: "hover:border-neon-pink/50",
+  },
+  {
     slug: "PS4",
     label: "PS4",
     sublabel: "Juegos",
@@ -23,14 +31,6 @@ const CATEGORIES: CategoryInfo[] = [
     icon: "🎮",
     colorClass: "text-neon-purple",
     borderHover: "hover:border-neon-purple/50",
-  },
-  {
-    slug: "STREAMING",
-    label: "STREAMING",
-    sublabel: "Cuentas",
-    icon: "📺",
-    colorClass: "text-neon-pink",
-    borderHover: "hover:border-neon-pink/50",
   },
   {
     slug: "PS_PLUS",
@@ -55,8 +55,7 @@ export default function Categories({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full -mt-10 relative z-20">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {CATEGORIES.map((cat) => {
-          const isActive =
-            activeCategory === cat.slug || cat.glowActive;
+          const isActive = activeCategory === cat.slug;
 
           return (
             <Link

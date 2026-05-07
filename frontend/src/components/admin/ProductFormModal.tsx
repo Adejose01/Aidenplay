@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { pb, getFileUrl } from "@/lib/pocketbase";
 import type { Product } from "@/types";
 import { toast } from "sonner";
@@ -15,9 +15,29 @@ interface ProductFormModalProps {
 export default function ProductFormModal({ product, onClose, onSave }: ProductFormModalProps) {
   const isEditing = !!product;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rates, setRates] = useState<{ars: number, rd: number} | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
     product ? getFileUrl(product, "cover_image") : null
   );
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const settings = await pb.collection("site_settings").getList(1, 1, {
+          fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+        });
+        if (settings.items.length > 0) {
+          setRates({
+            ars: settings.items[0].exchange_rate_ars || 0,
+            rd: settings.items[0].exchange_rate_rd || 0
+          });
+        }
+      } catch (e) {
+        console.error("Error al cargar tasas", e);
+      }
+    };
+    fetchRates();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,10 +46,11 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
     const formData = new FormData(e.currentTarget);
     const fileInput = formData.get("cover_image") as File;
     
-    // Si no es un archivo válido (por ejemplo, vacío al editar), eliminarlo del FormData para no sobrescribir con vacío
     if (fileInput && fileInput.size === 0) {
       formData.delete("cover_image");
     }
+
+    formData.set("price_usd", formData.get("price_usd") || "0");
 
     // Asegurarse de que los booleanos se envíen correctamente
     formData.set("is_active", formData.get("is_active") === "true" ? "true" : "false");
@@ -167,43 +188,29 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
                 >
                   <option value="Primaria">Cuenta Primaria</option>
                   <option value="Secundaria">Cuenta Secundaria</option>
-                  <option value="Suscripción">Suscripción Mensual</option>
+                  <option value="Suscripcion">Suscripción Mensual</option>
                 </select>
               </div>
             </div>
 
-            {/* Precios */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-brand-bg p-4 rounded-lg border border-brand-border">
-              <div>
-                <label className="block text-sm font-bold text-gray-300 mb-1.5">Precio Argentina (AR$)*</label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-3 text-gray-500 font-bold">$</span>
-                  <input 
-                    type="number" 
-                    name="price_ar"
-                    defaultValue={product?.price_ar || ""}
-                    required
-                    min="0"
-                    className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-2.5 pl-8 text-white focus:outline-none focus:border-neon-blue transition-colors"
-                    placeholder="4500"
-                  />
-                </div>
+            {/* Precio USD Único */}
+            <div className="bg-brand-bg p-6 rounded-lg border border-neon-blue/30 shadow-[0_0_15px_rgba(0,243,255,0.05)]">
+              <label className="block text-sm font-bold text-neon-blue mb-2 uppercase tracking-wider">Precio de Venta (USD) *</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neon-blue font-bold text-lg">$</span>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  name="price_usd"
+                  defaultValue={product?.price_usd || ""}
+                  required
+                  className="w-full bg-brand-card border border-brand-border rounded-xl px-4 py-4 pl-10 text-white text-xl font-bold focus:outline-none focus:border-neon-blue transition-all shadow-inner"
+                  placeholder="0.00"
+                />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-300 mb-1.5">Precio Rep. Dom (RD$)*</label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-3 text-gray-500 font-bold">$</span>
-                  <input 
-                    type="number" 
-                    name="price_rd"
-                    defaultValue={product?.price_rd || ""}
-                    required
-                    min="0"
-                    className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-2.5 pl-8 text-white focus:outline-none focus:border-neon-purple transition-colors"
-                    placeholder="350"
-                  />
-                </div>
-              </div>
+              <p className="mt-3 text-xs text-gray-500 italic">
+                * Este precio se convertirá automáticamente a ARS y RD$ en la tienda según las tasas configuradas.
+              </p>
             </div>
 
             {/* Switches */}

@@ -1,7 +1,6 @@
-// ============================================================
-// AIDEN PLAY — Tarjeta de Producto
-// ============================================================
+"use client";
 
+import { useState } from "react";
 import type { Product } from "@/types";
 import { getFileUrl, formatPrice, buildWhatsAppLink } from "@/lib/pocketbase";
 import AddToCartButton from "./AddToCartButton";
@@ -32,23 +31,36 @@ const CATEGORY_GRADIENTS: Record<Product["category"], string> = {
 const ACCOUNT_LABELS: Record<Product["account_type"], string> = {
   Primaria: "Cuenta Primaria",
   Secundaria: "Cuenta Secundaria",
-  Suscripción: "Suscripción Mensual",
+  Suscripcion: "Suscripción Mensual",
 };
 
 interface ProductCardProps {
   product: Product;
+  rates?: { ars: number; rd: number };
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, rates }: ProductCardProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD' | null>(null);
+  
+  const currentRates = rates || { ars: 1415, rd: 58 };
   const imageUrl = getFileUrl(product, "cover_image", { thumb: "400x300" });
+  
+  // Cálculo dinámico basado en precio USD y tasas
+  const usdPrice = product.price_usd || 0;
+  const priceARS = Math.round(usdPrice * currentRates.ars);
+  const priceRD = Math.round(usdPrice * currentRates.rd);
+
+  const currentPrice = selectedCurrency === 'ARS' ? priceARS : selectedCurrency === 'RD' ? priceRD : 0;
+  const currentSymbol = selectedCurrency === 'ARS' ? 'AR$' : 'RD$';
+
   const whatsAppUrl = buildWhatsAppLink(
     product.title,
-    product.price_ar,
-    product.price_rd
+    selectedCurrency === 'ARS' ? priceARS : 0,
+    selectedCurrency === 'RD' ? priceRD : 0
   );
 
   return (
-    <article className="bg-dark-card rounded-2xl overflow-hidden neon-border flex flex-col h-full shadow-lg group/card">
+    <article className="bg-dark-card rounded-2xl overflow-hidden neon-border flex flex-col h-full shadow-lg group/card relative">
       {/* Badge de categoría */}
       <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
         <span
@@ -103,31 +115,51 @@ export default function ProductCard({ product }: ProductCardProps) {
         </p>
 
         {/* Bloque de precios */}
-        <div className="bg-dark-lighter rounded-lg p-3 mb-4 border border-white/5">
-          {/* Precio Argentina */}
-          <div className="flex justify-between items-center mb-1.5">
-            <span className="text-xs font-bold text-gray-500 uppercase">
-              Argentina
-            </span>
-            <span className="font-black text-lg text-neon-blue">
-              AR$ {formatPrice(product.price_ar)}
-            </span>
-          </div>
+        <div className="mb-4 min-h-[80px] flex flex-col justify-center">
+          {selectedCurrency === null ? (
+            <button
+              onClick={() => setSelectedCurrency('ARS')}
+              className="w-full py-3 bg-brand-border/30 hover:bg-neon-blue/20 hover:border-neon-blue/50 border border-white/10 rounded-lg text-white font-bold text-xs uppercase tracking-widest transition-all"
+            >
+              Ver precio
+            </button>
+          ) : (
+            <div className="bg-dark-lighter rounded-xl p-3 border border-white/5 animate-in fade-in zoom-in-95 duration-300">
+              {/* Selector de Moneda */}
+              <div className="flex bg-black/40 p-1 rounded-lg mb-3">
+                <button 
+                  onClick={() => setSelectedCurrency('ARS')}
+                  className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-neon-blue text-black shadow-[0_0_10px_rgba(0,242,255,0.4)]' : 'text-gray-500 hover:text-white'}`}
+                >
+                  Argentina
+                </button>
+                <button 
+                  onClick={() => setSelectedCurrency('RD')}
+                  className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-neon-purple text-white shadow-[0_0_10px_rgba(188,19,254,0.4)]' : 'text-gray-500 hover:text-white'}`}
+                >
+                  Rep. Dom
+                </button>
+              </div>
 
-          {/* Precio R. Dominicana */}
-          <div className="flex justify-between items-center pt-1.5 border-t border-white/5">
-            <span className="text-xs font-bold text-gray-500 uppercase">
-              R. Dominicana
-            </span>
-            <span className="font-black text-base text-neon-purple">
-              RD$ {formatPrice(product.price_rd)}
-            </span>
-          </div>
+              {/* Precio Mostrado */}
+              <div className="flex justify-between items-center px-1">
+                <span className="font-black text-xl text-white">
+                  {currentSymbol} {formatPrice(currentPrice)}
+                </span>
+                <button 
+                  onClick={() => setSelectedCurrency(null)}
+                  className="text-[10px] text-gray-500 hover:text-neon-pink uppercase font-bold tracking-tighter transition-colors"
+                >
+                  Ocultar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Botones de acción */}
         <div className="mt-auto flex flex-col gap-2">
-          <AddToCartButton product={product} />
+          <AddToCartButton product={product} calculatedArs={priceARS} calculatedRd={priceRD} />
 
           <a
             href={whatsAppUrl}

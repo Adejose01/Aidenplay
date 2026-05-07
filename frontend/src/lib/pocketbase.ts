@@ -84,7 +84,9 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
   try {
     const records = await pb
       .collection("site_settings")
-      .getList<SiteSettings>(1, 1);
+      .getList<SiteSettings>(1, 1, {
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
+      });
     return records.items[0] || null;
   } catch {
     console.warn("⚠️ No se pudo conectar a PocketBase para site_settings");
@@ -104,6 +106,7 @@ export async function getProductsByCategory(
       .getList<Product>(1, 50, {
         filter: `category = '${category}' && is_active = true`,
         sort: "-is_featured,-created",
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
       });
     return records.items;
   } catch {
@@ -122,6 +125,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
       .getList<Product>(1, 8, {
         filter: "is_featured = true && is_active = true",
         sort: "-created",
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
       });
     return records.items;
   } catch {

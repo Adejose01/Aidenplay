@@ -3,14 +3,20 @@
 import { useCart } from "@/context/CartContext";
 import type { Product } from "@/types";
 
-export default function AddToCartButton({ product }: { product: Product }) {
+export default function AddToCartButton({ product, calculatedArs, calculatedRd }: { product: Product, calculatedArs: number, calculatedRd: number }) {
   const { addToCart } = useCart();
 
   return (
     <button 
       onClick={(e) => {
         e.preventDefault();
-        addToCart(product);
+        // Override the stale database prices with the dynamically calculated ones based on current exchange rates
+        const productWithRealPrices = {
+          ...product,
+          price_ar: calculatedArs,
+          price_rd: calculatedRd
+        };
+        addToCart(productWithRealPrices);
       }}
       className="w-full bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
     >

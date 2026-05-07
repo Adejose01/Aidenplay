@@ -12,7 +12,8 @@ export interface Product extends RecordModel {
   title: string;
   description: string;
   category: "PS4" | "PS5" | "PS_PLUS" | "STREAMING";
-  account_type: "Primaria" | "Secundaria" | "Suscripción";
+  account_type: "Primaria" | "Secundaria" | "Suscripcion";
+  price_usd: number;
   price_ar: number;
   price_rd: number;
   cover_image: string;
@@ -29,6 +30,8 @@ export interface SiteSettings extends RecordModel {
   hero_title_line2: string;
   hero_subtitle: string;
   hero_badge_text: string;
+  exchange_rate_ars: number;
+  exchange_rate_rd: number;
 }
 
 /**

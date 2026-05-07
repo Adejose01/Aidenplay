@@ -18,6 +18,7 @@ export default function ProductsTable() {
     try {
       const records = await pb.collection("products").getFullList<Product>({
         sort: "-created",
+        fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
       });
       setProducts(records);
     } catch (error) {
@@ -31,27 +32,6 @@ export default function ProductsTable() {
   useEffect(() => {
     fetchProducts();
   }, []);
-
-  const handlePriceUpdate = async (id: string, field: 'price_ar' | 'price_rd', value: number) => {
-    try {
-      await pb.collection("products").update(id, { [field]: value });
-      toast.success("Precio actualizado", { position: "bottom-center" });
-    } catch (error) {
-      console.error(error);
-      toast.error("Error al actualizar precio");
-      // Revertir el valor en la UI (idealmente) o refetch
-      fetchProducts();
-    }
-  };
-
-  const handleLocalPriceChange = (id: string, field: 'price_ar' | 'price_rd', value: string) => {
-    setProducts(products.map(p => {
-      if (p.id === id) {
-        return { ...p, [field]: Number(value) };
-      }
-      return p;
-    }));
-  };
 
   const handleDelete = async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar este producto?")) return;
@@ -87,14 +67,14 @@ export default function ProductsTable() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-display font-bold text-white">Catálogo de Productos</h2>
-          <p className="text-gray-400 text-sm mt-1">Gestiona el inventario, precios y visibilidad.</p>
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-white">Catálogo de Productos</h2>
+          <p className="text-gray-400 text-xs sm:text-sm mt-1">Gestiona el inventario, precios y visibilidad.</p>
         </div>
         <button 
           onClick={() => { setSelectedProduct(null); setIsModalOpen(true); }}
-          className="bg-neon-blue hover:bg-[#00cce6] text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
+          className="w-full sm:w-auto bg-neon-blue hover:bg-[#00cce6] text-black font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
         >
           <Plus className="w-5 h-5" />
           Nuevo Producto
@@ -105,13 +85,12 @@ export default function ProductsTable() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-brand-border/30 border-b border-brand-border text-xs uppercase text-gray-400 font-bold tracking-wider">
-                <th className="p-4">Producto</th>
-                <th className="p-4">Categoría / Tipo</th>
-                <th className="p-4 w-32">Precio (AR$)</th>
-                <th className="p-4 w-32">Precio (RD$)</th>
-                <th className="p-4 text-center">Estado</th>
-                <th className="p-4 text-right">Acciones</th>
+              <tr className="bg-brand-border/30 border-b border-brand-border text-[10px] sm:text-xs uppercase text-gray-400 font-bold tracking-wider">
+                <th className="p-3 sm:p-4">Producto</th>
+                <th className="p-3 sm:p-4 hidden sm:table-cell">Categoría</th>
+                <th className="p-3 sm:p-4 w-32 sm:w-40 text-center sm:text-left text-neon-blue">Precio USD</th>
+                <th className="p-3 sm:p-4 text-center hidden md:table-cell">Estado</th>
+                <th className="p-3 sm:p-4 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-border text-sm">
@@ -130,9 +109,9 @@ export default function ProductsTable() {
               ) : (
                 products.map((product) => (
                   <tr key={product.id} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-brand-bg overflow-hidden flex-shrink-0 relative border border-brand-border">
+                    <td className="p-3 sm:p-4">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-brand-bg overflow-hidden flex-shrink-0 relative border border-brand-border">
                           {product.cover_image ? (
                             <img 
                               src={getFileUrl(product, "cover_image", { thumb: "100x100" }) || ""} 
@@ -141,17 +120,17 @@ export default function ProductsTable() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-500">
-                              <ImageIcon className="w-5 h-5" />
+                              <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                             </div>
                           )}
                         </div>
-                        <div>
-                          <p className="font-bold text-white line-clamp-1">{product.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{product.description || "Sin descripción"}</p>
+                        <div className="max-w-[100px] sm:max-w-none">
+                          <p className="font-bold text-white text-xs sm:text-sm line-clamp-1">{product.title}</p>
+                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 line-clamp-1">{product.description || "Sin descripción"}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-3 sm:p-4 hidden sm:table-cell">
                       <div className="flex flex-col gap-1">
                         <span className={`inline-block px-2 py-0.5 text-[10px] font-bold uppercase rounded w-max ${
                           product.category === 'PS5' ? 'bg-[#0072CE]/20 text-[#0072CE]' :
@@ -161,34 +140,34 @@ export default function ProductsTable() {
                         }`}>
                           {product.category.replace('_', ' ')}
                         </span>
-                        <span className="text-xs text-gray-400">{product.account_type}</span>
+                        <span className="text-[10px] text-gray-400">{product.account_type}</span>
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className="p-3 sm:p-4">
                       <div className="relative flex items-center">
-                        <span className="absolute left-3 text-gray-500 text-xs font-bold">$</span>
+                        <span className="absolute left-2 sm:left-3 text-gray-500 text-[10px] font-bold">$</span>
                         <input 
                           type="number" 
-                          value={product.price_ar}
-                          onChange={(e) => handleLocalPriceChange(product.id, 'price_ar', e.target.value)}
-                          onBlur={(e) => handlePriceUpdate(product.id, 'price_ar', Number(e.target.value))}
-                          className="w-full bg-brand-bg border border-brand-border rounded md px-2 py-1.5 pl-6 text-white text-sm focus:border-neon-blue focus:outline-none transition-colors"
+                          step="0.01"
+                          value={product.price_usd}
+                          onChange={(e) => {
+                            setProducts(products.map(p => p.id === product.id ? { ...p, price_usd: Number(e.target.value) } : p));
+                          }}
+                          onBlur={async (e) => {
+                            try {
+                              const updated = await pb.collection("products").update<Product>(product.id, { price_usd: Number(e.target.value) });
+                              setProducts(prev => prev.map(p => p.id === product.id ? updated : p));
+                              toast.success("Precio USD actualizado", { position: "bottom-center" });
+                            } catch (error) {
+                              toast.error("Error al actualizar precio");
+                              fetchProducts();
+                            }
+                          }}
+                          className="w-full bg-brand-bg border border-brand-border rounded px-1.5 py-1 sm:px-2 sm:py-1.5 pl-4 sm:pl-6 text-white text-xs sm:text-sm focus:border-neon-blue focus:outline-none transition-colors"
                         />
                       </div>
                     </td>
-                    <td className="p-4">
-                      <div className="relative flex items-center">
-                        <span className="absolute left-3 text-gray-500 text-xs font-bold">$</span>
-                        <input 
-                          type="number" 
-                          value={product.price_rd}
-                          onChange={(e) => handleLocalPriceChange(product.id, 'price_rd', e.target.value)}
-                          onBlur={(e) => handlePriceUpdate(product.id, 'price_rd', Number(e.target.value))}
-                          className="w-full bg-brand-bg border border-brand-border rounded md px-2 py-1.5 pl-6 text-white text-sm focus:border-neon-purple focus:outline-none transition-colors"
-                        />
-                      </div>
-                    </td>
-                    <td className="p-4 text-center">
+                    <td className="p-3 sm:p-4 text-center hidden md:table-cell">
                       <div className="flex justify-center gap-2">
                         <button 
                           onClick={() => handleToggleActive(product)}
@@ -208,18 +187,18 @@ export default function ProductsTable() {
                         </button>
                       </div>
                     </td>
-                    <td className="p-4 text-right">
-                      <div className="flex justify-end gap-2">
+                    <td className="p-3 sm:p-4 text-right">
+                      <div className="flex justify-end gap-1 sm:gap-2">
                         <button 
                           onClick={() => { setSelectedProduct(product); setIsModalOpen(true); }}
-                          className="p-2 text-gray-400 hover:text-white hover:bg-brand-border rounded transition-colors"
+                          className="p-1.5 sm:p-2 text-gray-400 hover:text-white hover:bg-brand-border rounded transition-colors"
                           title="Editar"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(product.id)}
-                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                          className="p-1.5 sm:p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                           title="Eliminar"
                         >
                           <Trash2 className="w-4 h-4" />

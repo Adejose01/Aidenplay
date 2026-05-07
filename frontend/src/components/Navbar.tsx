@@ -11,35 +11,18 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0 flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-dark-lighter border border-neon-purple flex items-center justify-center transition-shadow group-hover:shadow-[0_0_12px_rgba(176,38,255,0.3)]">
-              <i className="fa-solid fa-gamepad text-neon-blue"></i>
+          <Link href="/" className="flex items-center group -ml-4">
+            <div className="relative w-40 h-20 flex items-center justify-center">
+              <img 
+                src="/logo.png" 
+                alt="Aiden Play" 
+                className="relative z-10 w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+              />
             </div>
-            <span className="font-display font-black text-xl tracking-wider uppercase neon-text-gradient">
-              Aiden Play
-            </span>
           </Link>
 
           {/* Menú Desktop */}
-          <div className="hidden md:flex ml-10 space-x-8 text-sm font-medium">
-            <Link
-              href="/"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Inicio
-            </Link>
-            <Link
-              href="/#catalogo"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Catálogo PS4/PS5
-            </Link>
-            <Link
-              href="/#suscripciones"
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              Suscripciones
-            </Link>
+          <div className="hidden md:flex items-center space-x-8">
           </div>
 
           {/* Iconos */}

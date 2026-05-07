@@ -2,6 +2,7 @@ import { getProductsByCategory, getSiteSettings } from "@/lib/pocketbase";
 import ProductGrid from "@/components/ProductGrid";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SearchBar from "@/components/SearchBar";
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,10 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
   const resolvedParams = await params;
   const dbCategoryName = resolvedParams.category.toUpperCase();
-  const products = await getProductsByCategory(dbCategoryName);
+  const [products, settings] = await Promise.all([
+    getProductsByCategory(dbCategoryName),
+    getSiteSettings(),
+  ]);
 
   const titles: Record<string, string> = {
     ps4: "CATÁLOGO DE PS4",
@@ -48,7 +52,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-neon-blue to-neon-purple mx-auto mt-6 rounded-full"></div>
           </div>
-          <ProductGrid products={products} title="" />
+          <SearchBar categoryFilter={dbCategoryName} />
+          <ProductGrid
+            products={products}
+            title=""
+            rates={{
+              ars: settings?.exchange_rate_ars || 1415,
+              rd: settings?.exchange_rate_rd || 58
+            }}
+          />
         </div>
       </main>
       <Footer />

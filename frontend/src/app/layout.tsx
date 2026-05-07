@@ -20,17 +20,33 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-    "Netflix",
-    "Spotify",
-    "cuentas digitales",
-    "Aiden Play",
-  ],
+  title: {
+    default: "Aiden Play | Catálogo de Juegos PS4, PS5 y Streaming",
+    template: "%s | Aiden Play"
+  },
+  description: "La tienda líder en juegos digitales para PS4, PS5 y cuentas de streaming. Precios imbatibles en Argentina y República Dominicana. Entrega inmediata.",
+  keywords: ["juegos ps4", "juegos ps5", "cuentas streaming", "ps plus barato", "juegos digitales", "aiden play", "netflix", "spotify"],
+  authors: [{ name: "Aiden Play" }],
+  metadataBase: new URL('https://aidenplay.com'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: "Aiden Play | Videojuegos Digitales y Streaming",
-    description:
-      "El mejor catálogo digital PS4 & PS5. Cuentas de streaming al mejor precio.",
-    type: "website",
-    locale: "es_AR",
+    title: 'Aiden Play | Tu catálogo de juegos favoritos',
+    description: 'Encuentra los mejores títulos de PlayStation y servicios de streaming al mejor precio.',
+    url: 'https://aidenplay.com',
+    siteName: 'Aiden Play',
+    locale: 'es_AR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Aiden Play | Juegos y Streaming',
+    description: 'Precios increíbles en juegos digitales y cuentas.',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 

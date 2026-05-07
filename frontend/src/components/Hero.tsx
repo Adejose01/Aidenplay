@@ -32,54 +32,33 @@ export default function Hero({ settings }: HeroProps) {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <motion.div 
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="md:w-2/3"
+          className="md:w-3/4 lg:w-2/3 pt-10"
         >
           {/* Badge */}
-          <motion.span 
+          <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
-            className="inline-block py-1.5 px-4 rounded-full bg-neon-pink/10 border border-neon-pink/30 text-neon-pink text-[10px] font-black tracking-widest uppercase mb-6"
+            className="mb-8"
           >
-            {badge}
-          </motion.span>
+            <span className="inline-block py-2 px-5 rounded-full bg-neon-pink/20 border border-neon-pink/40 text-neon-pink text-xs font-black tracking-widest uppercase shadow-[0_0_20px_rgba(255,0,127,0.2)]">
+              {badge}
+            </span>
+          </motion.div>
 
           {/* Title */}
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-[0.9] tracking-tighter">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-[0.85] tracking-tighter uppercase italic">
             <span className="block text-white mb-2">{line1}</span>
             <span className="neon-text-gradient block">{line2}</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-gray-400 text-lg md:text-xl mb-10 max-w-xl leading-relaxed font-medium">
+          <p className="text-gray-300 text-lg md:text-xl mb-12 max-w-2xl leading-relaxed font-medium">
             {subtitle}
           </p>
-
-          {/* Buttons */}
-          <div className="flex flex-wrap gap-5">
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              href="#catalogo"
-              className="bg-white text-black font-black py-4 px-10 rounded-xl uppercase tracking-tighter text-sm transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-            >
-              Ver Catálogo
-            </motion.a>
-            
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              href="https://wa.me/18091234567"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-brand-card border border-white/10 text-white font-black py-4 px-10 rounded-xl uppercase tracking-tighter text-sm transition-all hover:border-white/40 flex items-center gap-2"
-            >
-              Soporte VIP
-            </motion.a>
-          </div>
         </motion.div>
       </div>
 

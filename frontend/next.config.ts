@@ -19,6 +19,16 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "aidenplay.com",
+        pathname: "/api/files/**",
+      },
+      {
+        protocol: "https",
+        hostname: "db.aidenplay.com",
+        pathname: "/api/files/**",
+      },
+      {
+        protocol: "https",
         hostname: "images.unsplash.com",
       },
     ],

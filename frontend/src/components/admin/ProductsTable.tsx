@@ -113,11 +113,11 @@ export default function ProductsTable() {
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-brand-bg overflow-hidden flex-shrink-0 relative border border-brand-border">
                           {product.cover_image ? (
-                            <img 
-                              src={getFileUrl(product, "cover_image", { thumb: "100x100" }) || ""} 
-                              alt={product.title} 
-                              className="w-full h-full object-cover"
-                            />
+<img 
+  src={getFileUrl(product, "cover_image", { thumb: "100x100" }) || ""} 
+  alt={product.title} 
+  className="w-full h-full object-cover"
+/>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-500">
                               <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />

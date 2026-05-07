@@ -5,6 +5,7 @@ import { pb, getFileUrl } from "@/lib/pocketbase";
 import type { Product } from "@/types";
 import { toast } from "sonner";
 import { X, Upload } from "lucide-react";
+import { processImageForUpload } from "@/lib/imageProcessor";
 
 interface ProductFormModalProps {
   product: Product | null;
@@ -43,18 +44,26 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
     e.preventDefault();
     setIsSubmitting(true);
     
-    const formData = new FormData(e.currentTarget);
-    const fileInput = formData.get("cover_image") as File;
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
+    const fileInput = formElement.querySelector('input[name="cover_image"]') as HTMLInputElement;
+    const file = fileInput?.files?.[0];
     
-    if (fileInput && fileInput.size === 0) {
+    // Si hay un archivo, procesarlo a WebP antes de subir
+    if (file) {
+      try {
+        const webpFile = await processImageForUpload(file);
+        formData.set("cover_image", webpFile);
+      } catch (e) {
+        console.error("Error al procesar imagen", e);
+      }
+    } else if (isEditing) {
       formData.delete("cover_image");
     }
 
     formData.set("price_usd", formData.get("price_usd") || "0");
-
-    // Asegurarse de que los booleanos se envíen correctamente
-    formData.set("is_active", formData.get("is_active") === "true" ? "true" : "false");
-    formData.set("is_featured", formData.get("is_featured") === "true" ? "true" : "false");
+    formData.set("is_active", formData.get("is_active") === "on" || formData.get("is_active") === "true" ? "true" : "false");
+    formData.set("is_featured", formData.get("is_featured") === "on" || formData.get("is_featured") === "true" ? "true" : "false");
 
     try {
       if (isEditing) {
@@ -110,28 +119,15 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
                     name="cover_image"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                     required={!isEditing}
                   />
                 </div>
                 <div className="flex-1 text-sm text-gray-400">
                   <p>Recomendado: 800x600px o ratio 4:3.</p>
                   <p>Formato: JPG, PNG, WEBP. Máx: 5MB.</p>
-                  <p className="mt-2 text-neon-blue cursor-pointer relative">
-                    Seleccionar archivo
-                    <input 
-                      type="file" 
-                      name="cover_image_alt" 
-                      accept="image/*"
-                      onChange={(e) => {
-                        const fileInput = document.querySelector('input[name="cover_image"]') as HTMLInputElement;
-                        if(fileInput && e.target.files) {
-                           fileInput.files = e.target.files;
-                           handleImageChange(e);
-                        }
-                      }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
+                  <p className="mt-2 text-neon-blue font-bold">
+                    Haz clic en el recuadro para subir
                   </p>
                 </div>
               </div>
@@ -208,9 +204,6 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
                   placeholder="0.00"
                 />
               </div>
-              <p className="mt-3 text-xs text-gray-500 italic">
-                * Este precio se convertirá automáticamente a ARS y RD$ en la tienda según las tasas configuradas.
-              </p>
             </div>
 
             {/* Switches */}
@@ -219,7 +212,6 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
                 <input 
                   type="checkbox" 
                   name="is_active" 
-                  value="true"
                   defaultChecked={product ? product.is_active : true}
                   className="w-5 h-5 rounded border-brand-border bg-brand-bg text-neon-blue focus:ring-neon-blue"
                 />
@@ -230,7 +222,6 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
                 <input 
                   type="checkbox" 
                   name="is_featured" 
-                  value="true"
                   defaultChecked={product ? product.is_featured : false}
                   className="w-5 h-5 rounded border-brand-border bg-brand-bg text-neon-pink focus:ring-neon-pink"
                 />

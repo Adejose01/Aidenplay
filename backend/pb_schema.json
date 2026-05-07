@@ -72,6 +72,16 @@
         }
       },
       {
+        "name": "price_usd",
+        "type": "number",
+        "required": true,
+        "options": {
+          "min": 0,
+          "max": null,
+          "noDecimal": false
+        }
+      },
+      {
         "name": "cover_image",
         "type": "file",
         "required": false,
@@ -160,6 +170,26 @@
           "min": null,
           "max": 50,
           "pattern": ""
+        }
+      },
+      {
+        "name": "exchange_rate_ars",
+        "type": "number",
+        "required": true,
+        "options": {
+          "min": 0,
+          "max": null,
+          "noDecimal": false
+        }
+      },
+      {
+        "name": "exchange_rate_rd",
+        "type": "number",
+        "required": true,
+        "options": {
+          "min": 0,
+          "max": null,
+          "noDecimal": false
         }
       }
     ],

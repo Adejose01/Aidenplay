@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Zap, ArrowLeft } from "lucide-react";
 import type { Product } from "@/types";
 import { getFileUrl, formatPrice } from "@/lib/pocketbase";
 import AddToCartButton from "@/components/AddToCartButton";
@@ -13,6 +16,7 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ variants, rates, baseProduct }: ProductDetailsProps) {
+  const router = useRouter();
   const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD'>('ARS');
   
   const availablePlatforms = useMemo(() => {
@@ -44,6 +48,17 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 group"
+      >
+        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+        <span className="font-black uppercase text-xs tracking-widest">Volver al catálogo</span>
+      </motion.button>
+
       <div className="bg-dark-card/50 backdrop-blur-xl rounded-[40px] border border-white/5 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col md:flex-row min-h-[600px]">
         
         {/* Product Image */}
@@ -51,18 +66,22 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1 }}
-          className="md:w-1/2 relative bg-black aspect-square md:aspect-auto"
+          className="md:w-1/2 relative bg-black aspect-square md:aspect-auto min-h-[400px]"
         >
           {imageUrl ? (
-            <img 
+            <Image 
               src={imageUrl} 
               alt={baseProduct.title} 
-              className="w-full h-full object-cover"
+              fill
+              priority
+              unoptimized={true}
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-8xl opacity-10">🎮</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
         </motion.div>
 
         {/* Product Details */}
@@ -169,12 +188,13 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
                       <motion.a
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        href={`https://wa.me/18091234567?text=Hola! Quiero comprar ${currentVariant.title} (${currentVariant.category} - ${currentVariant.account_type}) por ${currentSymbol} ${formatPrice(currentPrice)}`}
+                        href={`https://wa.me/584241732650?text=${encodeURIComponent(`¡Hola! 👋 Vengo desde *${selectedCurrency === 'ARS' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴'}* y quiero comprar: *${currentVariant.title}* (${currentVariant.category} - ${currentVariant.account_type}) por *${currentSymbol} ${formatPrice(currentPrice)}*`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-brand-card hover:bg-white/10 border border-white/10 text-white font-black py-5 rounded-2xl text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                        className="bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-5 rounded-2xl text-xs transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-[#25D366]/20 group"
                       >
-                        ⚡ Compra Rápida
+                        <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
+                        Compra Rápida
                       </motion.a>
                     </div>
                   </motion.div>

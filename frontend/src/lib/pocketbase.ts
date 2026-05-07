@@ -37,7 +37,23 @@ export function getFileUrl(
 ): string | null {
   const filename = record[fieldName];
   if (!record || !filename) return null;
-  return pb.files.getUrl(record, filename as string, options);
+  
+  // Usamos un prefijo de proxy relativo que el navegador siempre pueda resolver.
+  // Esto evita que el servidor genere URLs con hostnames internos de Docker (ej: http://backend:8090)
+  // que el navegador no puede entender.
+  const baseUrl = "/proxy";
+  const collection = record.collectionId || record.collectionName;
+  const url = `${baseUrl}/api/files/${collection}/${record.id}/${filename}`;
+  
+  const params = new URLSearchParams();
+  if (options.thumb) params.append("thumb", options.thumb);
+  // Cache busting basado en la fecha de actualización del registro
+  if (record.updated) {
+    params.append("t", new Date(record.updated).getTime().toString());
+  }
+  
+  const queryString = params.toString();
+  return queryString ? `${url}?${queryString}` : url;
 }
 
 /**
@@ -61,15 +77,18 @@ export function formatPrice(price: number): string {
  */
 export function buildWhatsAppLink(
   productTitle: string,
-  priceAR: number,
-  priceRD: number
+  price: number,
+  currency: 'ARS' | 'RD'
 ): string {
-  // Número de WhatsApp del negocio (cambiar al real)
-  const phone = "18091234567";
+  // Número de WhatsApp del negocio
+  const phone = "584241732650";
+  const regionName = currency === 'ARS' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴';
+  const symbol = currency === 'ARS' ? 'AR$' : 'RD$';
+
   const message = encodeURIComponent(
-    `¡Hola! 👋 Estoy interesado en:\n\n` +
+    `¡Hola! 👋 Vengo desde *${regionName}* y quiero comprar:\n\n` +
     `🎮 *${productTitle}*\n` +
-    `💰 AR$ ${formatPrice(priceAR)} / RD$ ${formatPrice(priceRD)}\n\n` +
+    `💰 *${symbol} ${formatPrice(price)}*\n\n` +
     `¿Está disponible?`
   );
   return `https://wa.me/${phone}?text=${message}`;

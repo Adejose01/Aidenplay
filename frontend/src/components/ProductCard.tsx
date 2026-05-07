@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Zap, Eye } from "lucide-react";
 import type { Product } from "@/types";
 import { getFileUrl, formatPrice, buildWhatsAppLink } from "@/lib/pocketbase";
 import AddToCartButton from "./AddToCartButton";
-import { motion } from "framer-motion";
 
 /**
  * Mapeo de categorías a colores de badge.
@@ -13,26 +15,7 @@ const CATEGORY_COLORS: Record<Product["category"], string> = {
   PS4: "bg-[#003791]",
   PS5: "bg-[#0072CE]",
   PS_PLUS: "bg-yellow-600",
-  STREAMING: "bg-neon-pink",
-};
-
-/**
- * Mapeo de categorías a gradientes de fondo para la imagen.
- */
-const CATEGORY_GRADIENTS: Record<Product["category"], string> = {
-  PS4: "from-black to-blue-950",
-  PS5: "from-black to-indigo-950",
-  PS_PLUS: "from-black to-yellow-950",
-  STREAMING: "from-black to-pink-950",
-};
-
-/**
- * Etiquetas legibles en español para el tipo de cuenta.
- */
-const ACCOUNT_LABELS: Record<Product["account_type"], string> = {
-  Primaria: "Cuenta Primaria",
-  Secundaria: "Cuenta Secundaria",
-  Suscripcion: "Suscripción Mensual",
+  STREAMING: "bg-pink-600",
 };
 
 interface ProductCardProps {
@@ -56,137 +39,135 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
 
   const whatsAppUrl = buildWhatsAppLink(
     product.title,
-    selectedCurrency === 'ARS' ? priceARS : 0,
-    selectedCurrency === 'RD' ? priceRD : 0
+    currentPrice,
+    selectedCurrency || 'ARS'
   );
 
   return (
-    <motion.article 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.4 }}
-      className="bg-dark-card rounded-2xl overflow-hidden border border-white/5 flex flex-col h-full shadow-xl group/card relative hover:border-white/20 transition-all duration-300"
-    >
+    <article className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 flex flex-col h-full shadow-lg group/card transition-all hover:border-white/20">
       {/* Badge de categoría */}
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+      <div className="absolute top-3 right-3 z-20 flex flex-col gap-1.5">
         <span
-          className={`${CATEGORY_COLORS[product.category]} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest`}
+          className={`${CATEGORY_COLORS[product.category]} text-white text-[10px] font-black px-2.5 py-1 rounded shadow-sm uppercase tracking-wider`}
         >
           {product.category.replace("_", " ")}
         </span>
       </div>
 
       {/* Imagen de portada */}
-      <div className="aspect-[4/3] bg-dark-lighter relative overflow-hidden">
-        {/* Gradiente de fondo como fallback */}
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${CATEGORY_GRADIENTS[product.category]} z-0`}
-        />
-
+      <Link href={`/producto/${product.id}`} className="aspect-square bg-white/5 relative overflow-hidden block">
         {imageUrl ? (
-          <img
+          <Image
             src={imageUrl}
             alt={product.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 opacity-80 group-hover/card:opacity-100 relative z-10"
+            fill
+            priority
+            unoptimized={true}
+            className="object-cover group-hover/card:scale-110 transition-transform duration-700"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
-          /* Placeholder cuando no hay imagen */
-          <div className="w-full h-full flex items-center justify-center relative z-10">
-            <span className="text-5xl opacity-30">🎮</span>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-4xl opacity-20">🎮</span>
           </div>
         )}
 
-        {/* Gradiente inferior */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent z-10" />
+        {/* Overlay gradiente */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+
+        {/* Preview Indicator */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-30">
+          <div className="bg-neon-blue text-black p-3 rounded-full shadow-[0_0_20px_rgba(0,242,255,0.5)]">
+            <Eye className="w-6 h-6" />
+          </div>
+        </div>
 
         {/* Badge de tipo de cuenta */}
         <div className="absolute bottom-3 left-3 z-20">
-          <span className="bg-white/90 backdrop-blur-sm text-black text-[9px] font-black uppercase px-2 py-1 rounded shadow-lg">
-            {ACCOUNT_LABELS[product.account_type]}
+          <span className="bg-white/90 backdrop-blur-sm text-black text-[10px] font-black uppercase px-2 py-1 rounded">
+            {product.account_type}
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Contenido */}
-      <div className="p-5 flex flex-col flex-grow">
+      <div className="p-4 flex flex-col flex-grow">
         {/* Título */}
-        <h3 className="font-display font-black text-xl leading-tight mb-2 text-white group-hover/card:text-neon-blue transition-colors">
-          {product.title}
-        </h3>
+        <Link href={`/producto/${product.id}`}>
+          <h3 className="font-display font-bold text-lg leading-tight mb-1 text-white group-hover/card:text-neon-blue transition-colors uppercase italic cursor-pointer">
+            {product.title}
+          </h3>
+        </Link>
 
         {/* Descripción corta */}
-        <p className="text-gray-500 text-xs mb-6 line-clamp-2 leading-relaxed font-medium">
+        <p className="text-gray-400 text-xs mb-4 line-clamp-1 font-medium">
           {product.description}
         </p>
 
         {/* Bloque de precios */}
-        <div className="mb-6 min-h-[85px] flex flex-col justify-center">
+        <div className="mb-4 min-h-[90px] flex flex-col justify-center">
           {selectedCurrency === null ? (
             <button
               onClick={() => setSelectedCurrency('ARS')}
-              className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-white font-black text-xs uppercase tracking-[0.2em] transition-all"
+              className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] transition-all"
             >
-              Consultar Precio
+              Ver Precio
             </button>
           ) : (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/5"
-            >
-              {/* Selector de Moneda */}
-              <div className="flex bg-white/5 p-1 rounded-xl mb-4">
+            <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/5 animate-in fade-in zoom-in-95 duration-300">
+              <div className="flex bg-white/5 p-1 rounded-lg mb-3">
                 <button 
                   onClick={() => setSelectedCurrency('ARS')}
-                  className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-neon-blue text-black shadow-[0_0_15px_rgba(0,242,255,0.4)]' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex-1 py-2 rounded-md text-[9px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
                 >
-                  ARS
+                  Argentina
                 </button>
                 <button 
                   onClick={() => setSelectedCurrency('RD')}
-                  className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-neon-purple text-white shadow-[0_0_15px_rgba(188,19,254,0.4)]' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex-1 py-2 rounded-md text-[9px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
                 >
-                  RD$
+                  Rep. Dom
                 </button>
               </div>
 
-              {/* Precio Mostrado */}
               <div className="flex justify-between items-center px-1">
-                <span className="font-black text-2xl text-white tracking-tighter">
-                  <span className="text-xs text-gray-500 mr-1 font-bold">{currentSymbol}</span>
-                  {formatPrice(currentPrice)}
+                <span className="font-black text-xl text-white tracking-tighter">
+                  {currentSymbol} {formatPrice(currentPrice)}
                 </span>
                 <button 
                   onClick={() => setSelectedCurrency(null)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full bg-white/5 text-gray-500 hover:text-neon-pink hover:bg-white/10 transition-all"
+                  className="text-[10px] text-gray-500 hover:text-white uppercase font-black transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  Cerrar
                 </button>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
 
         {/* Botones de acción */}
-        <div className="mt-auto flex flex-col gap-3">
+        <div className="mt-auto flex flex-col gap-2">
           <AddToCartButton product={product} calculatedArs={priceARS} calculatedRd={priceRD} />
 
-          <a
-            href={whatsAppUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full bg-brand-card hover:bg-white/5 border border-white/5 text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn"
+          <button
+            onClick={() => {
+              if (selectedCurrency) {
+                window.open(whatsAppUrl, "_blank");
+              } else {
+                setSelectedCurrency('ARS'); // Default or just show the selector
+              }
+            }}
+            className={`w-full font-black py-3.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg group ${
+              selectedCurrency 
+                ? 'bg-[#25D366] text-white hover:bg-[#128C7E] shadow-[#25D366]/20' 
+                : 'bg-white/5 text-gray-500 hover:bg-white/10 border border-white/10'
+            }`}
           >
-            <span className="group-hover/btn:scale-110 transition-transform duration-300">⚡</span>
-            Compra Rápida
-          </a>
+            <Zap className={`w-4 h-4 ${selectedCurrency ? 'fill-white group-hover:animate-pulse' : 'fill-gray-600'}`} />
+            {selectedCurrency ? 'Compra Rápida' : 'Selecciona Región p/ Comprar'}
+          </button>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }

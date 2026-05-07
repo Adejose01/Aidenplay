@@ -10,13 +10,20 @@
 onAfterBootstrap((e) => {
     console.log("🎮 [Aiden Play] Verificando esquema de base de datos...");
 
-    // 0. ASEGURAR ADMINISTRADOR
+    // 0. ASEGURAR ADMINISTRADOR (Fuerza la contraseña AidenPlay2026!)
     try {
-        const admin = new Admin();
-        admin.email = "admin@aidenplay.com";
-        admin.setPassword("admin12345678"); // 10 chars is better
+        let admin;
+        try {
+            admin = $app.dao().findAdminByEmail("admin@aidenplay.com");
+        } catch (e) {
+            admin = new Admin();
+            admin.email = "admin@aidenplay.com";
+        }
+        admin.setPassword("AidenPlay2026!");
         $app.dao().saveAdmin(admin);
-    } catch (err) {}
+    } catch (err) {
+        console.log("❌ Error asegurando admin: " + err);
+    }
 
     // 1. MIGRACIÓN DE PRODUCTOS (Fijar price_usd si es 0)
     try {

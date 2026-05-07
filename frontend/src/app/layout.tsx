@@ -20,15 +20,6 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Aiden Play | Videojuegos Digitales y Streaming",
-  description:
-    "Tu tienda digital de videojuegos PS4, PS5, suscripciones PS Plus y cuentas de streaming. Los mejores precios en Pesos Argentinos y Dominicanos. Servicio rápido y confiable.",
-  keywords: [
-    "videojuegos digitales",
-    "PS4",
-    "PS5",
-    "PS Plus",
-    "streaming",
     "Netflix",
     "Spotify",
     "cuentas digitales",

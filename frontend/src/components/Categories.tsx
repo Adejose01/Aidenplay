@@ -1,11 +1,8 @@
 "use client";
 
-// ============================================================
-// AIDEN PLAY — Categorías Rápidas
-// ============================================================
-
 import type { CategoryInfo } from "@/types";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const CATEGORIES: CategoryInfo[] = [
   {
@@ -52,51 +49,54 @@ export default function Categories({
   onCategoryChange,
 }: CategoriesProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full -mt-10 relative z-20">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full -mt-20 relative z-20">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {CATEGORIES.map((cat) => {
+        {CATEGORIES.map((cat, index) => {
           const isActive = activeCategory === cat.slug;
 
           return (
-            <Link
+            <motion.div
               key={cat.slug}
-              href={`/catalogo/${cat.slug.toLowerCase()}`}
-              className={`
-                bg-dark-card border rounded-xl p-4 flex items-center justify-center gap-3
-                transition-all duration-300 group
-                ${
-                  isActive
-                    ? `border-neon-pink/40 shadow-[0_0_15px_rgba(255,0,127,0.15)] relative overflow-hidden`
-                    : `border-white/5 ${cat.borderHover}`
-                }
-              `}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
             >
-              {/* Fondo de glow para categoría activa */}
-              {isActive && (
-                <div className="absolute inset-0 bg-neon-pink/5" />
-              )}
-
-              {/* Icono */}
-              <span
-                className={`text-3xl transition-transform group-hover:scale-110 relative z-10 ${
-                  isActive ? "" : "grayscale group-hover:grayscale-0"
-                }`}
+              <Link
+                href={`/catalogo/${cat.slug.toLowerCase()}`}
+                className={`
+                  bg-dark-card/80 backdrop-blur-md border rounded-2xl p-5 flex items-center justify-center gap-4
+                  transition-all duration-300 group h-full
+                  ${
+                    isActive
+                      ? `border-neon-pink/40 shadow-[0_0_20px_rgba(255,0,127,0.2)] relative overflow-hidden`
+                      : `border-white/5 ${cat.borderHover} hover:bg-white/5`
+                  }
+                `}
               >
-                {cat.icon}
-              </span>
+                {isActive && (
+                  <div className="absolute inset-0 bg-neon-pink/5" />
+                )}
 
-              {/* Texto */}
-              <div className="text-left relative z-10">
-                <p className="font-bold text-sm uppercase text-gray-300">
-                  {cat.sublabel}
-                </p>
-                <p
-                  className={`${cat.colorClass} font-black text-lg leading-none`}
+                <span
+                  className={`text-4xl transition-transform group-hover:scale-110 relative z-10 ${
+                    isActive ? "" : "grayscale group-hover:grayscale-0"
+                  }`}
                 >
-                  {cat.label}
-                </p>
-              </div>
-            </Link>
+                  {cat.icon}
+                </span>
+
+                <div className="text-left relative z-10">
+                  <p className="font-black text-[10px] uppercase tracking-widest text-gray-500 mb-0.5">
+                    {cat.sublabel}
+                  </p>
+                  <p
+                    className={`${cat.colorClass} font-black text-xl leading-none tracking-tighter`}
+                  >
+                    {cat.label}
+                  </p>
+                </div>
+              </Link>
+            </motion.div>
           );
         })}
       </div>

@@ -1,67 +1,91 @@
-// ============================================================
-// AIDEN PLAY — Sección Hero (Banner Principal)
-// ============================================================
+"use client";
 
 import type { SiteSettings } from "@/types";
+import { motion } from "framer-motion";
 
 interface HeroProps {
   settings: SiteSettings | null;
 }
 
 export default function Hero({ settings }: HeroProps) {
-  // Valores por defecto si PocketBase no tiene datos aún
   const line1 = settings?.hero_title_line1 || "EL MEJOR CATÁLOGO";
   const line2 = settings?.hero_title_line2 || "DIGITAL PS4 & PS5";
   const subtitle =
     settings?.hero_subtitle ||
-    "Servicio rápido y confiable. Encuentra los últimos lanzamientos, cuentas primarias/secundarias al mejor precio en Pesos Argentinos y Dominicanos.";
+    "Servicio rápido y confiable. Encuentra los últimos lanzamientos y cuentas al mejor precio.";
   const badge = settings?.hero_badge_text || "🔥 Ofertas Semanales";
 
   return (
-    <section className="relative bg-dark-card overflow-hidden border-b border-white/5">
-      {/* Imagen de fondo con overlay */}
+    <section className="relative h-[600px] flex items-center overflow-hidden border-b border-white/5">
+      {/* Background Image with Parallax-like effect */}
       <div
-        className="absolute inset-0 opacity-20 bg-cover bg-center"
+        className="absolute inset-0 z-0"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1605901309584-818e25960b8f?q=80&w=2000&auto=format&fit=crop')",
+          backgroundImage: "url('/hero-bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
         }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/90 to-transparent" />
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
+      </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-        <div className="md:w-2/3">
-          {/* Badge promocional */}
-          <span className="inline-block py-1 px-3 rounded bg-neon-pink/10 border border-neon-pink/50 text-neon-pink text-xs font-bold tracking-widest uppercase mb-4 animate-pulse-soft">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="md:w-2/3"
+        >
+          {/* Badge */}
+          <motion.span 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+            className="inline-block py-1.5 px-4 rounded-full bg-neon-pink/10 border border-neon-pink/30 text-neon-pink text-[10px] font-black tracking-widest uppercase mb-6"
+          >
             {badge}
-          </span>
+          </motion.span>
 
-          {/* Título principal */}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-black mb-4 leading-tight">
-            {line1}
-            <br />
-            <span className="neon-text-gradient">{line2}</span>
+          {/* Title */}
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-[0.9] tracking-tighter">
+            <span className="block text-white mb-2">{line1}</span>
+            <span className="neon-text-gradient block">{line2}</span>
           </h1>
 
-          {/* Subtítulo */}
-          <p className="text-gray-400 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
+          {/* Subtitle */}
+          <p className="text-gray-400 text-lg md:text-xl mb-10 max-w-xl leading-relaxed font-medium">
             {subtitle}
           </p>
 
-          {/* CTA */}
-          <div className="flex flex-wrap gap-4">
-            <a
-              href="https://wa.me/5491112345678" // Número de prueba (se debe cambiar por el real del cliente)
+          {/* Buttons */}
+          <div className="flex flex-wrap gap-5">
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="#catalogo"
+              className="bg-white text-black font-black py-4 px-10 rounded-xl uppercase tracking-tighter text-sm transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            >
+              Ver Catálogo
+            </motion.a>
+            
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="https://wa.me/18091234567"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-3 px-8 rounded-lg uppercase tracking-wider text-sm shadow-lg shadow-[#25D366]/20 inline-flex items-center gap-2 transition-all"
+              className="bg-brand-card border border-white/10 text-white font-black py-4 px-10 rounded-xl uppercase tracking-tighter text-sm transition-all hover:border-white/40 flex items-center gap-2"
             >
-              <i className="fa-brands fa-whatsapp text-xl"></i>
-              Contactar por WhatsApp
-            </a>
+              Soporte VIP
+            </motion.a>
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Decorative Glow */}
+      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-neon-blue/20 blur-[120px] rounded-full" />
+      <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-neon-purple/20 blur-[120px] rounded-full" />
     </section>
   );
 }

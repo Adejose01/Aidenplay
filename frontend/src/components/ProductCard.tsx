@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Product } from "@/types";
 import { getFileUrl, formatPrice, buildWhatsAppLink } from "@/lib/pocketbase";
 import AddToCartButton from "./AddToCartButton";
+import { motion } from "framer-motion";
 
 /**
  * Mapeo de categorías a colores de badge.
@@ -60,11 +61,18 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
   );
 
   return (
-    <article className="bg-dark-card rounded-2xl overflow-hidden neon-border flex flex-col h-full shadow-lg group/card relative">
+    <motion.article 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.4 }}
+      className="bg-dark-card rounded-2xl overflow-hidden border border-white/5 flex flex-col h-full shadow-xl group/card relative hover:border-white/20 transition-all duration-300"
+    >
       {/* Badge de categoría */}
       <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
         <span
-          className={`${CATEGORY_COLORS[product.category]} text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase`}
+          className={`${CATEGORY_COLORS[product.category]} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase tracking-widest`}
         >
           {product.category.replace("_", " ")}
         </span>
@@ -82,7 +90,7 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
             src={imageUrl}
             alt={product.title}
             loading="lazy"
-            className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500 opacity-60 mix-blend-luminosity group-hover/card:mix-blend-normal relative z-10"
+            className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 opacity-80 group-hover/card:opacity-100 relative z-10"
           />
         ) : (
           /* Placeholder cuando no hay imagen */
@@ -92,93 +100,93 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
         )}
 
         {/* Gradiente inferior */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-dark-card/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent z-10" />
 
         {/* Badge de tipo de cuenta */}
         <div className="absolute bottom-3 left-3 z-20">
-          <span className="bg-white text-black text-[10px] font-black uppercase px-2 py-1 rounded">
+          <span className="bg-white/90 backdrop-blur-sm text-black text-[9px] font-black uppercase px-2 py-1 rounded shadow-lg">
             {ACCOUNT_LABELS[product.account_type]}
           </span>
         </div>
       </div>
 
       {/* Contenido */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-5 flex flex-col flex-grow">
         {/* Título */}
-        <h3 className="font-display font-bold text-lg leading-tight mb-1 text-white">
+        <h3 className="font-display font-black text-xl leading-tight mb-2 text-white group-hover/card:text-neon-blue transition-colors">
           {product.title}
         </h3>
 
         {/* Descripción corta */}
-        <p className="text-gray-400 text-xs mb-4 line-clamp-1">
+        <p className="text-gray-500 text-xs mb-6 line-clamp-2 leading-relaxed font-medium">
           {product.description}
         </p>
 
         {/* Bloque de precios */}
-        <div className="mb-4 min-h-[80px] flex flex-col justify-center">
+        <div className="mb-6 min-h-[85px] flex flex-col justify-center">
           {selectedCurrency === null ? (
             <button
               onClick={() => setSelectedCurrency('ARS')}
-              className="w-full py-3 bg-brand-border/30 hover:bg-neon-blue/20 hover:border-neon-blue/50 border border-white/10 rounded-lg text-white font-bold text-xs uppercase tracking-widest transition-all"
+              className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-white font-black text-xs uppercase tracking-[0.2em] transition-all"
             >
-              Ver precio
+              Consultar Precio
             </button>
           ) : (
-            <div className="bg-dark-lighter rounded-xl p-3 border border-white/5 animate-in fade-in zoom-in-95 duration-300">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/5"
+            >
               {/* Selector de Moneda */}
-              <div className="flex bg-black/40 p-1 rounded-lg mb-3">
+              <div className="flex bg-white/5 p-1 rounded-xl mb-4">
                 <button 
                   onClick={() => setSelectedCurrency('ARS')}
-                  className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-neon-blue text-black shadow-[0_0_10px_rgba(0,242,255,0.4)]' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-neon-blue text-black shadow-[0_0_15px_rgba(0,242,255,0.4)]' : 'text-gray-500 hover:text-white'}`}
                 >
-                  Argentina
+                  ARS
                 </button>
                 <button 
                   onClick={() => setSelectedCurrency('RD')}
-                  className={`flex-1 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-neon-purple text-white shadow-[0_0_10px_rgba(188,19,254,0.4)]' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-neon-purple text-white shadow-[0_0_15px_rgba(188,19,254,0.4)]' : 'text-gray-500 hover:text-white'}`}
                 >
-                  Rep. Dom
+                  RD$
                 </button>
               </div>
 
               {/* Precio Mostrado */}
               <div className="flex justify-between items-center px-1">
-                <span className="font-black text-xl text-white">
-                  {currentSymbol} {formatPrice(currentPrice)}
+                <span className="font-black text-2xl text-white tracking-tighter">
+                  <span className="text-xs text-gray-500 mr-1 font-bold">{currentSymbol}</span>
+                  {formatPrice(currentPrice)}
                 </span>
                 <button 
                   onClick={() => setSelectedCurrency(null)}
-                  className="text-[10px] text-gray-500 hover:text-neon-pink uppercase font-bold tracking-tighter transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-full bg-white/5 text-gray-500 hover:text-neon-pink hover:bg-white/10 transition-all"
                 >
-                  Ocultar
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
         {/* Botones de acción */}
-        <div className="mt-auto flex flex-col gap-2">
+        <div className="mt-auto flex flex-col gap-3">
           <AddToCartButton product={product} calculatedArs={priceARS} calculatedRd={priceRD} />
 
           <a
             href={whatsAppUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full btn-whatsapp font-bold py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-brand-card hover:bg-white/5 border border-white/5 text-white font-black py-3 rounded-xl text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 group/btn"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-5 h-5"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            Comprar Rápido
+            <span className="group-hover/btn:scale-110 transition-transform duration-300">⚡</span>
+            Compra Rápida
           </a>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

@@ -47,14 +47,14 @@
           "values": [
             "Primaria",
             "Secundaria",
-            "Suscripción"
+            "Suscripcion"
           ]
         }
       },
       {
         "name": "price_ar",
         "type": "number",
-        "required": true,
+        "required": false,
         "options": {
           "min": 0,
           "max": null,
@@ -64,7 +64,7 @@
       {
         "name": "price_rd",
         "type": "number",
-        "required": true,
+        "required": false,
         "options": {
           "min": 0,
           "max": null,

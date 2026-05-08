@@ -55,7 +55,7 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
       </div>
 
       {/* Imagen de portada */}
-      <Link href={`/producto/${product.id}`} className="aspect-square bg-white/5 relative overflow-hidden block">
+      <Link href={`/producto/${product.id}`} className="aspect-[4/5] sm:aspect-square bg-white/5 relative overflow-hidden block">
         {imageUrl ? (
           <Image
             src={imageUrl}

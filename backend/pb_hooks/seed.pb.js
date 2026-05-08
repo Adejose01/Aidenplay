@@ -1,31 +1,30 @@
 // ============================================================
-// AIDEN PLAY - Script de Inicialización de Base de Datos
-// ============================================================
-// Este hook se ejecuta automáticamente cuando PocketBase inicia.
-// Verifica si las colecciones y datos semilla ya existen antes
-// de intentar crearlos, haciéndolo idempotente (seguro de
-// ejecutar múltiples veces).
+// AIDEN PLAY - Script de Inicialización Robusto
 // ============================================================
 
 onAfterBootstrap((e) => {
-    console.log("🎮 [Aiden Play] Verificando esquema de base de datos...");
+    console.log("🎮 [Aiden Play] Verificando base de datos...");
 
-    // 0. ASEGURAR ADMINISTRADOR (Fuerza la contraseña AidenPlay2026!)
+    // 1. ASEGURAR ADMINISTRADOR (Solo si no existe)
     try {
-        let admin;
+        const adminEmail = "admin@aidenplay.com";
         try {
-            admin = $app.dao().findAdminByEmail("admin@aidenplay.com");
-        } catch (e) {
-            admin = new Admin();
-            admin.email = "admin@aidenplay.com";
+            // Intentar buscar si ya existe
+            $app.dao().findAdminByEmail(adminEmail);
+            console.log("✅ Admin ya existe, omitiendo creación.");
+        } catch (err) {
+            // Si no existe, lo creamos con la contraseña por defecto
+            const admin = new Admin();
+            admin.email = adminEmail;
+            admin.setPassword("AidenPlay2026!");
+            $app.dao().saveAdmin(admin);
+            console.log("👤 Admin creado exitosamente: " + adminEmail);
         }
-        admin.setPassword("AidenPlay2026!");
-        $app.dao().saveAdmin(admin);
     } catch (err) {
-        console.log("❌ Error asegurando admin: " + err);
+        console.log("❌ Error en admin setup: " + err);
     }
 
-    // 1. MIGRACIÓN DE PRODUCTOS (Fijar price_usd si es 0)
+    // 2. MIGRACIÓN DE PRODUCTOS (Asegurar que tengan USD)
     try {
         const products = $app.dao().findRecordsByFilter("products", "price_usd = 0 || price_usd = null", "", 100);
         for (const p of products) {
@@ -37,18 +36,5 @@ onAfterBootstrap((e) => {
         }
     } catch (err) {}
 
-    // 2. FIJAR TASAS (solo si están vacías — NO sobreescribir valores del admin)
-    try {
-        const records = $app.dao().findRecordsByFilter("site_settings", "id != ''", "", 1);
-        if (records.length > 0) {
-            const rec = records[0];
-            const currentArs = rec.getFloat("exchange_rate_ars");
-            const currentRd = rec.getFloat("exchange_rate_rd");
-            if (!currentArs || currentArs === 0) rec.set("exchange_rate_ars", 1451);
-            if (!currentRd || currentRd === 0) rec.set("exchange_rate_rd", 62);
-            $app.dao().saveRecord(rec);
-        }
-    } catch (err) {}
-
-    console.log("🎮 [Aiden Play] Inicialización completada.");
+    console.log("🎮 [Aiden Play] Sistema listo.");
 });

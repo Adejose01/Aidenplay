@@ -28,7 +28,7 @@ export default function ProductGrid({ products, title, sectionId, rates }: Produ
       <div className="flex justify-between items-end mb-8 border-b border-white/5 pb-4">
         <h2 className="font-display text-2xl md:text-3xl font-black uppercase">{title}</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} rates={rates} />
         ))}

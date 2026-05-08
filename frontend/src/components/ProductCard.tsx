@@ -91,54 +91,54 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
       </Link>
 
       {/* Contenido */}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-3 sm:p-4 flex flex-col flex-grow">
         {/* Título */}
         <Link href={`/producto/${product.id}`}>
-          <h3 className="font-display font-bold text-lg leading-tight mb-1 text-white group-hover/card:text-neon-blue transition-colors uppercase italic cursor-pointer">
+          <h3 className="font-display font-bold text-[13px] sm:text-lg leading-tight mb-1 text-white group-hover/card:text-neon-blue transition-colors uppercase italic cursor-pointer line-clamp-2">
             {product.title}
           </h3>
         </Link>
 
         {/* Descripción corta */}
-        <p className="text-gray-400 text-xs mb-4 line-clamp-1 font-medium">
+        <p className="text-gray-400 text-[10px] sm:text-xs mb-3 sm:mb-4 line-clamp-1 font-medium">
           {product.description}
         </p>
 
         {/* Bloque de precios */}
-        <div className="mb-4 min-h-[90px] flex flex-col justify-center">
+        <div className="mb-3 sm:mb-4 min-h-[80px] sm:min-h-[90px] flex flex-col justify-center">
           {selectedCurrency === null ? (
             <button
               onClick={() => setSelectedCurrency('ARS')}
-              className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] transition-all"
+              className="w-full py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-black text-[9px] sm:text-[10px] uppercase tracking-wider sm:tracking-[0.2em] transition-all"
             >
               Ver Precio
             </button>
           ) : (
-            <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/5 animate-in fade-in zoom-in-95 duration-300">
-              <div className="flex bg-white/5 p-1 rounded-lg mb-3">
+            <div className="bg-black/40 backdrop-blur-md rounded-xl p-2 sm:p-3 border border-white/5 animate-in fade-in zoom-in-95 duration-300">
+              <div className="flex bg-white/5 p-1 rounded-lg mb-2 sm:mb-3">
                 <button 
                   onClick={() => setSelectedCurrency('ARS')}
-                  className={`flex-1 py-2 rounded-md text-[9px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex-1 py-1.5 sm:py-2 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
                 >
-                  Argentina
+                  ARG
                 </button>
                 <button 
                   onClick={() => setSelectedCurrency('RD')}
-                  className={`flex-1 py-2 rounded-md text-[9px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex-1 py-1.5 sm:py-2 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
                 >
-                  Rep. Dom
+                  RD
                 </button>
               </div>
 
-              <div className="flex justify-between items-center px-1">
-                <span className="font-black text-xl text-white tracking-tighter">
+              <div className="flex justify-between items-center px-0.5 sm:px-1">
+                <span className="font-black text-sm sm:text-xl text-white tracking-tighter">
                   {currentSymbol} {formatPrice(currentPrice)}
                 </span>
                 <button 
                   onClick={() => setSelectedCurrency(null)}
-                  className="text-[10px] text-gray-500 hover:text-white uppercase font-black transition-colors"
+                  className="text-[8px] sm:text-[10px] text-gray-500 hover:text-white uppercase font-black transition-colors"
                 >
-                  Cerrar
+                  X
                 </button>
               </div>
             </div>
@@ -154,17 +154,17 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
               if (selectedCurrency) {
                 window.open(whatsAppUrl, "_blank");
               } else {
-                setSelectedCurrency('ARS'); // Default or just show the selector
+                setSelectedCurrency('ARS');
               }
             }}
-            className={`w-full font-black py-3.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg group ${
+            className={`w-full font-black py-2.5 sm:py-3.5 rounded-xl text-[9px] sm:text-xs transition-all flex items-center justify-center gap-2 uppercase tracking-tight sm:tracking-widest shadow-lg group ${
               selectedCurrency 
                 ? 'bg-[#25D366] text-white hover:bg-[#128C7E] shadow-[#25D366]/20' 
                 : 'bg-white/5 text-gray-500 hover:bg-white/10 border border-white/10'
             }`}
           >
-            <Zap className={`w-4 h-4 ${selectedCurrency ? 'fill-white group-hover:animate-pulse' : 'fill-gray-600'}`} />
-            {selectedCurrency ? 'Compra Rápida' : 'Selecciona Región p/ Comprar'}
+            <Zap className={`w-3 h-3 sm:w-4 sm:h-4 ${selectedCurrency ? 'fill-white group-hover:animate-pulse' : 'fill-gray-600'}`} />
+            {selectedCurrency ? 'Comprar' : 'Comprar'}
           </button>
         </div>
       </div>

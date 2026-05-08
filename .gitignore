@@ -10,11 +10,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# PocketBase
-backend/pb_data/
-backend/pb_migrations/
-*.db
-*.log
+# PocketBase (Habilitados para sincronización total)
+# backend/pb_data/
+# backend/pb_migrations/
 
 # Docker
 .dockerignore

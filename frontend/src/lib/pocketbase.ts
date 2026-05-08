@@ -78,9 +78,10 @@ export function formatPrice(price: number): string {
 export function buildWhatsAppLink(
   productTitle: string,
   price: number,
-  currency: 'ARS' | 'RD'
+  currency: 'ARS' | 'RD',
+  category: string,
+  accountType: string
 ): string {
-  // Número de WhatsApp del negocio
   const phone = "584241732650";
   const regionName = currency === 'ARS' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴';
   const symbol = currency === 'ARS' ? 'AR$' : 'RD$';
@@ -88,7 +89,9 @@ export function buildWhatsAppLink(
   const message = encodeURIComponent(
     `¡Hola! 👋 Vengo desde *${regionName}* y quiero comprar:\n\n` +
     `🎮 *${productTitle}*\n` +
-    `💰 *${symbol} ${formatPrice(price)}*\n\n` +
+    `🕹️ Consola: *${category}*\n` +
+    `🔑 Tipo: *${accountType}*\n` +
+    `💰 Precio: *${symbol} ${formatPrice(price)}*\n\n` +
     `¿Está disponible?`
   );
   return `https://wa.me/${phone}?text=${message}`;

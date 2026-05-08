@@ -40,7 +40,9 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
   const whatsAppUrl = buildWhatsAppLink(
     product.title,
     currentPrice,
-    selectedCurrency || 'ARS'
+    selectedCurrency || 'ARS',
+    product.category,
+    product.account_type
   );
 
   return (
@@ -149,23 +151,17 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
         <div className="mt-auto flex flex-col gap-2">
           <AddToCartButton product={product} calculatedArs={priceARS} calculatedRd={priceRD} />
 
-          <button
-            onClick={() => {
-              if (selectedCurrency) {
+          {selectedCurrency && (
+            <button
+              onClick={() => {
                 window.open(whatsAppUrl, "_blank");
-              } else {
-                setSelectedCurrency('ARS');
-              }
-            }}
-            className={`w-full font-black py-2.5 sm:py-3.5 rounded-xl text-[9px] sm:text-xs transition-all flex items-center justify-center gap-2 uppercase tracking-tight sm:tracking-widest shadow-lg group ${
-              selectedCurrency 
-                ? 'bg-[#25D366] text-white hover:bg-[#128C7E] shadow-[#25D366]/20' 
-                : 'bg-white/5 text-gray-500 hover:bg-white/10 border border-white/10'
-            }`}
-          >
-            <Zap className={`w-3 h-3 sm:w-4 sm:h-4 ${selectedCurrency ? 'fill-white group-hover:animate-pulse' : 'fill-gray-600'}`} />
-            {selectedCurrency ? 'Comprar' : 'Comprar'}
-          </button>
+              }}
+              className="w-full font-black py-2.5 sm:py-3.5 rounded-xl text-[9px] sm:text-xs bg-[#25D366] text-white hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 uppercase tracking-tight sm:tracking-widest shadow-lg shadow-[#25D366]/20 group"
+            >
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 fill-white group-hover:animate-pulse" />
+              Comprar por WhatsApp
+            </button>
+          )}
         </div>
       </div>
     </article>

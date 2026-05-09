@@ -21,7 +21,7 @@ RUN wget -q https://github.com/pocketbase/pocketbase/releases/download/v${PB_VER
 
 # Copiar configuración, hooks o base de datos pre-existente si las hubiera
 COPY ./pb_hooks /pb/pb_hooks
-# Opcional: COPY ./pb_migrations /pb/pb_migrations
+COPY ./pb_migrations /pb/pb_migrations
 
 # Exponer el puerto
 EXPOSE 8090

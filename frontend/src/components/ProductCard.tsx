@@ -1,22 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Zap, Eye } from "lucide-react";
 import type { Product } from "@/types";
+import { CATEGORY_COLORS } from "@/types";
 import { getFileUrl, formatPrice, buildWhatsAppLink } from "@/lib/pocketbase";
 import AddToCartButton from "./AddToCartButton";
-
-/**
- * Mapeo de categorías a colores de badge.
- */
-const CATEGORY_COLORS: Record<Product["category"], string> = {
-  PS4: "bg-[#003791]",
-  PS5: "bg-[#0072CE]",
-  PS_PLUS: "bg-yellow-600",
-  STREAMING: "bg-pink-600",
-};
+import { useSettings } from "@/context/SettingsContext";
 
 interface ProductCardProps {
   product: Product;
@@ -24,7 +16,15 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, rates }: ProductCardProps) {
+  const { settings, region: detectedRegion, whatsappNumber } = useSettings();
   const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD' | null>(null);
+
+  // Auto-seleccionar moneda según región detectada
+  useEffect(() => {
+    if (detectedRegion && !selectedCurrency) {
+      setSelectedCurrency(detectedRegion === 'AR' ? 'ARS' : 'RD');
+    }
+  }, [detectedRegion, selectedCurrency]);
   
   const currentRates = rates || { ars: 1415, rd: 58 };
   const imageUrl = getFileUrl(product, "cover_image", { thumb: "400x300" });
@@ -42,7 +42,8 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
     currentPrice,
     selectedCurrency || 'ARS',
     product.category,
-    product.account_type
+    product.account_type,
+    selectedCurrency === 'ARS' ? (settings?.whatsapp_ar || whatsappNumber) : (settings?.whatsapp_rd || whatsappNumber)
   );
 
   return (

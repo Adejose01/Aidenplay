@@ -40,6 +40,14 @@ const CATEGORIES: CategoryInfo[] = [
     colorClass: "text-yellow-500",
     borderHover: "hover:border-yellow-500/50",
   },
+  {
+    slug: "NINTENDO",
+    label: "NINTENDO",
+    sublabel: "Switch",
+    icon: "🕹️",
+    colorClass: "text-[#E60012]",
+    borderHover: "hover:border-[#E60012]/50",
+  },
 ];
 
 interface CategoriesProps {
@@ -53,7 +61,7 @@ export default function Categories({
 }: CategoriesProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full -mt-10 relative z-20">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat.slug;
 

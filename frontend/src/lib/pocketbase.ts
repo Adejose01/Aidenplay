@@ -11,7 +11,7 @@ import type { RecordModel } from "pocketbase";
  * - En el servidor (Docker): usa la red interna de Docker.
  */
 const PB_URL = typeof window !== 'undefined'
-  ? "/proxy"
+  ? (process.env.NEXT_PUBLIC_PB_URL || "/proxy")
   : (process.env.PB_INTERNAL_URL || "http://localhost:8090");
 
 /**
@@ -80,9 +80,9 @@ export function buildWhatsAppLink(
   price: number,
   currency: 'ARS' | 'RD',
   category: string,
-  accountType: string
+  accountType: string,
+  phone: string = "584241732650"
 ): string {
-  const phone = "584241732650";
   const regionName = currency === 'ARS' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴';
   const symbol = currency === 'ARS' ? 'AR$' : 'RD$';
 
@@ -94,7 +94,8 @@ export function buildWhatsAppLink(
     `💰 Precio: *${symbol} ${formatPrice(price)}*\n\n` +
     `¿Está disponible?`
   );
-  return `https://wa.me/${phone}?text=${message}`;
+  const cleanPhone = phone.replace(/\D/g, "");
+  return `https://wa.me/${cleanPhone}?text=${message}`;
 }
 
 import type { Product, SiteSettings } from "@/types";

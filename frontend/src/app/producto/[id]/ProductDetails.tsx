@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Zap, ArrowLeft } from "lucide-react";
 import type { Product } from "@/types";
-import { getFileUrl, formatPrice } from "@/lib/pocketbase";
+import { getFileUrl, formatPrice, buildWhatsAppLink } from "@/lib/pocketbase";
 import AddToCartButton from "@/components/AddToCartButton";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSettings } from "@/context/SettingsContext";
 
 interface ProductDetailsProps {
   variants: Product[];
@@ -17,57 +18,90 @@ interface ProductDetailsProps {
 
 export default function ProductDetails({ variants, rates, baseProduct }: ProductDetailsProps) {
   const router = useRouter();
+  const { settings, region: detectedRegion, whatsappNumber } = useSettings();
   const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD'>('ARS');
+
+  // 1. Auto-seleccionar moneda según región
+  useEffect(() => {
+    if (detectedRegion && !selectedCurrency) {
+      setSelectedCurrency(detectedRegion === 'AR' ? 'ARS' : 'RD');
+    }
+  }, [detectedRegion, selectedCurrency]);
   
+  // 2. Extraer opciones únicas de las variantes
   const availablePlatforms = useMemo(() => {
-    const platforms = new Set<string>();
-    variants.forEach(v => platforms.add(v.category));
-    return Array.from(platforms);
+    const platforms = ["PS4", "PS5", "NINTENDO"].filter(p => variants.some(v => v.category === p));
+    return platforms;
   }, [variants]);
 
   const availableAccountTypes = useMemo(() => {
-    const accounts = new Set<string>();
-    variants.forEach(v => accounts.add(v.account_type));
-    return Array.from(accounts);
+    const types = ["Primaria", "Secundaria"].filter(t => variants.some(v => v.account_type === t));
+    return types;
   }, [variants]);
 
+  // 3. Estados de selección
   const [selectedPlatform, setSelectedPlatform] = useState<string>(baseProduct.category);
   const [selectedAccountType, setSelectedAccountType] = useState<string>(baseProduct.account_type);
 
+  // 4. LÓGICA DE AUTO-SELECCIÓN: Si cambio de plataforma y la licencia no existe, busco la primera disponible
+  const handlePlatformChange = (platform: string) => {
+    setSelectedPlatform(platform);
+    const exists = variants.some(v => v.category === platform && v.account_type === selectedAccountType);
+    if (!exists) {
+      const firstAvailable = variants.find(v => v.category === platform);
+      if (firstAvailable) {
+        setSelectedAccountType(firstAvailable.account_type);
+      }
+    }
+  };
+
+  // 5. Estado Derivado: Producto Exacto
   const currentVariant = useMemo(() => {
     return variants.find(v => v.category === selectedPlatform && v.account_type === selectedAccountType) || null;
   }, [variants, selectedPlatform, selectedAccountType]);
 
-  const usdPrice = currentVariant?.price_usd || 0;
-  const priceARS = Math.round(usdPrice * rates.ars);
-  const priceRD = Math.round(usdPrice * rates.rd);
-  const currentPrice = selectedCurrency === 'ARS' ? priceARS : priceRD;
+  const isNintendo = selectedPlatform === "NINTENDO";
+
+  // 6. Precios dinámicos (Priorizar precio directo de la DB si existe)
+  const currentPrice = useMemo(() => {
+    if (!currentVariant) return 0;
+    
+    if (selectedCurrency === 'ARS') {
+      // Si tiene precio ARS directo en DB (> 0), usarlo. Si no, calcular desde USD.
+      return currentVariant.price_ar > 0 
+        ? currentVariant.price_ar 
+        : Math.round((currentVariant.price_usd || 0) * rates.ars);
+    } else {
+      // Si tiene precio RD directo en DB (> 0), usarlo. Si no, calcular desde USD.
+      return currentVariant.price_rd > 0 
+        ? currentVariant.price_rd 
+        : Math.round((currentVariant.price_usd || 0) * rates.rd);
+    }
+  }, [currentVariant, selectedCurrency, rates]);
+
+  const priceARS = currentVariant?.price_ar || Math.round((currentVariant?.price_usd || 0) * rates.ars);
+  const priceRD = currentVariant?.price_rd || Math.round((currentVariant?.price_usd || 0) * rates.rd);
   const currentSymbol = selectedCurrency === 'ARS' ? 'AR$' : 'RD$';
 
   const imageUrl = getFileUrl(baseProduct, "cover_image");
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Back Button */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Botón Volver */}
       <motion.button
-        initial={{ opacity: 0, x: -20 }}
+        initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 group"
+        className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors mb-6 group"
       >
-        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-        <span className="font-black uppercase text-xs tracking-widest">Volver al catálogo</span>
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span className="font-black uppercase text-[9px] tracking-widest">Volver al catálogo</span>
       </motion.button>
 
-      <div className="bg-dark-card/50 backdrop-blur-xl rounded-[40px] border border-white/5 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col md:flex-row min-h-[600px]">
+      <div className="bg-dark-card/40 backdrop-blur-3xl rounded-[32px] border border-white/5 overflow-hidden shadow-2xl flex flex-col md:flex-row">
         
-        {/* Product Image */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1 }}
-          className="md:w-1/2 relative bg-black aspect-square md:aspect-auto min-h-[400px]"
-        >
+        {/* Imagen */}
+        <div className="md:w-[45%] relative bg-black aspect-square md:aspect-auto min-h-[400px]">
           {imageUrl ? (
             <Image 
               src={imageUrl} 
@@ -76,71 +110,85 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
               priority
               unoptimized={true}
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
+              sizes="(max-width: 768px) 100vw, 45vw"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-8xl opacity-10">🎮</div>
+            <div className="w-full h-full flex items-center justify-center text-7xl opacity-10">🎮</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-        </motion.div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          
+          {isNintendo && (
+            <div className="absolute top-5 left-5 z-20">
+              <span className="bg-[#E60012] text-white text-[9px] font-black uppercase px-3 py-1.5 rounded-full shadow-lg shadow-[#E60012]/40 tracking-widest">
+                Nintendo Switch
+              </span>
+            </div>
+          )}
+        </div>
 
-        {/* Product Details */}
-        <div className="md:w-1/2 p-8 md:p-16 flex flex-col justify-center relative">
+        {/* Info */}
+        <div className="md:w-[55%] p-8 md:p-12 flex flex-col justify-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
           >
-            <h1 className="text-4xl md:text-6xl font-display font-black text-white mb-6 leading-[0.9] tracking-tighter">
+            <h1 className="text-3xl md:text-5xl font-display font-black text-white mb-3 leading-tight tracking-tight uppercase">
               {baseProduct.title}
             </h1>
-            <p className="text-gray-500 text-base md:text-lg mb-10 leading-relaxed font-medium max-w-lg">
+            <p className="text-gray-500 text-xs md:text-sm mb-8 leading-relaxed font-medium max-w-md line-clamp-3">
               {baseProduct.description}
             </p>
 
-            <div className="space-y-10 flex-grow mb-12">
-              {/* Platform Selector */}
-              <div>
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Plataforma</label>
-                <div className="flex flex-wrap gap-4">
-                  {availablePlatforms.map(platform => (
-                    <button
-                      key={platform}
-                      onClick={() => setSelectedPlatform(platform)}
-                      className={`px-8 py-4 rounded-2xl font-black uppercase text-xs transition-all border ${
-                        selectedPlatform === platform 
-                          ? 'bg-neon-blue text-black border-neon-blue shadow-[0_0_20px_rgba(0,242,255,0.4)]' 
-                          : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:border-white/20'
-                      }`}
-                    >
-                      {platform.replace('_', ' ')}
-                    </button>
-                  ))}
+            {/* Selectores */}
+            <div className="space-y-6 mb-10">
+              {/* Plataforma */}
+              {availablePlatforms.length > 1 && (
+                <div>
+                  <label className="block text-[8px] font-black text-gray-600 uppercase tracking-[0.3em] mb-3">Selecciona Consola</label>
+                  <div className="flex flex-wrap gap-3">
+                    {availablePlatforms.map(platform => (
+                      <button
+                        key={platform}
+                        onClick={() => handlePlatformChange(platform)}
+                        className={`px-6 py-3 rounded-xl font-black uppercase text-[10px] transition-all duration-300 border ${
+                          selectedPlatform === platform 
+                            ? 'bg-neon-blue text-black border-neon-blue shadow-[0_0_15px_rgba(0,242,255,0.3)]' 
+                            : 'bg-white/5 text-gray-500 border-white/5 hover:bg-white/10'
+                        }`}
+                      >
+                        {platform}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* License Selector */}
+              {/* Licencia */}
               <div>
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">Tipo de Licencia</label>
-                <div className="flex flex-wrap gap-4">
+                <label className="block text-[8px] font-black text-gray-600 uppercase tracking-[0.3em] mb-3">Configuración de Cuenta</label>
+                <div className="flex flex-wrap gap-3">
                   {availableAccountTypes.map(account => {
                     const exists = variants.some(v => v.category === selectedPlatform && v.account_type === account);
+                    const isActive = selectedAccountType === account;
+                    
                     return (
                       <button
                         key={account}
-                        onClick={() => setSelectedAccountType(account)}
+                        onClick={() => exists && setSelectedAccountType(account)}
                         disabled={!exists}
-                        className={`px-8 py-4 rounded-2xl font-black text-xs transition-all border relative overflow-hidden ${
-                          selectedAccountType === account && exists
-                            ? 'bg-neon-purple text-white border-neon-purple shadow-[0_0_20px_rgba(188,19,254,0.4)]' 
+                        className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase transition-all duration-300 border relative overflow-hidden ${
+                          isActive && exists
+                            ? (isNintendo 
+                                ? 'bg-[#E60012] text-white border-[#E60012] shadow-[0_0_15px_rgba(230,0,18,0.3)]' 
+                                : 'bg-neon-purple text-white border-neon-purple shadow-[0_0_15px_rgba(188,19,254,0.3)]')
                             : !exists
-                              ? 'bg-black/50 text-gray-700 border-white/5 cursor-not-allowed opacity-40'
-                              : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:border-white/20'
+                              ? 'bg-white/5 text-gray-800 border-white/5 cursor-not-allowed opacity-30'
+                              : 'bg-white/5 text-gray-500 border-white/5 hover:bg-white/10'
                         }`}
                       >
                         {account}
                         {!exists && (
-                          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgoJPHJlY3Qgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0ibm9uZSI+PC9yZWN0PgoJPHBhdGggZD0iTTAgMEw4IDhaTTAgOEw4IDBaIiBzdHJva2U9IiM0NDQiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=')] opacity-20"></div>
+                          <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(255,255,255,0.02)_5px,rgba(255,255,255,0.02)_10px)]"></div>
                         )}
                       </button>
                     );
@@ -149,67 +197,59 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
               </div>
             </div>
 
-            <div className="pt-10 border-t border-white/5">
-              <AnimatePresence mode="wait">
-                {currentVariant ? (
-                  <motion.div 
-                    key="available"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="space-y-8"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm text-gray-500 font-black uppercase tracking-widest">{currentSymbol}</span>
-                          <span className="text-5xl md:text-7xl font-black text-white tracking-tighter">{formatPrice(currentPrice)}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/5">
-                        <button 
-                          onClick={() => setSelectedCurrency('ARS')}
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-neon-blue text-black' : 'text-gray-500 hover:text-white'}`}
-                        >
-                          ARS
-                        </button>
-                        <button 
-                          onClick={() => setSelectedCurrency('RD')}
-                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-neon-purple text-white' : 'text-gray-500 hover:text-white'}`}
-                        >
-                          RD$
-                        </button>
-                      </div>
-                    </div>
+            {/* Precio */}
+            <div className="pt-8 border-t border-white/5">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{currentSymbol}</span>
+                  <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                    {currentVariant ? formatPrice(currentPrice) : "---"}
+                  </span>
+                </div>
+                
+                <div className="flex bg-black/30 p-1 rounded-xl border border-white/5">
+                  {['ARS', 'RD'].map(curr => (
+                    <button 
+                      key={curr}
+                      onClick={() => setSelectedCurrency(curr as any)}
+                      className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${selectedCurrency === curr ? (isNintendo ? 'bg-[#E60012] text-white' : 'bg-neon-blue text-black') : 'text-gray-500 hover:text-white'}`}
+                    >
+                      {curr === 'ARS' ? 'ARS' : 'RD$'}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <AddToCartButton product={currentVariant} calculatedArs={priceARS} calculatedRd={priceRD} />
-                      <motion.a
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        href={`https://wa.me/584241732650?text=${encodeURIComponent(`¡Hola! 👋 Vengo desde *${selectedCurrency === 'ARS' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴'}* y quiero comprar: *${currentVariant.title}* (${currentVariant.category} - ${currentVariant.account_type}) por *${currentSymbol} ${formatPrice(currentPrice)}*`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-5 rounded-2xl text-xs transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-[#25D366]/20 group"
-                      >
-                        <Zap className="w-5 h-5 fill-white group-hover:animate-pulse" />
-                        Compra Rápida
-                      </motion.a>
-                    </div>
-                  </motion.div>
+              {/* Botones */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {currentVariant ? (
+                  <>
+                    <AddToCartButton product={currentVariant} calculatedArs={priceARS} calculatedRd={priceRD} />
+                    <motion.a
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      href={buildWhatsAppLink(
+                        currentVariant.title,
+                        currentPrice,
+                        selectedCurrency,
+                        currentVariant.category,
+                        currentVariant.account_type,
+                        selectedCurrency === 'ARS' ? (settings?.whatsapp_ar || whatsappNumber) : (settings?.whatsapp_rd || whatsappNumber)
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 rounded-xl text-[10px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-[#25D366]/20"
+                    >
+                      <Zap className="w-4 h-4 fill-white" />
+                      Compra Rápida
+                    </motion.a>
+                  </>
                 ) : (
-                  <motion.div 
-                    key="unavailable"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="bg-red-500/10 border border-red-500/20 rounded-[24px] p-8 text-center"
-                  >
-                    <p className="text-red-400 font-black text-xl mb-2 tracking-tighter uppercase">No disponible</p>
-                    <p className="text-red-400/60 text-sm font-medium">Esta combinación está agotada. Selecciona otra opción.</p>
-                  </motion.div>
+                  <div className="col-span-2 bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
+                    <p className="text-red-500 font-black text-xs uppercase">No disponible para esta selección</p>
+                  </div>
                 )}
-              </AnimatePresence>
+              </div>
             </div>
           </motion.div>
         </div>

@@ -67,73 +67,119 @@ export default function SettingsForm() {
         </div>
 
         <div className="bg-brand-card border border-brand-border rounded-xl p-6 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-12">
             
-            <div className="bg-brand-bg border border-neon-pink/30 rounded-lg p-5">
-              <label className="block text-sm font-bold text-neon-pink mb-1.5">Texto del Badge (Etiqueta superior)</label>
-              <input 
-                type="text" 
-                name="hero_badge_text"
-                value={settings?.hero_badge_text || ""}
-                onChange={(e) => setSettings(prev => prev ? { ...prev, hero_badge_text: e.target.value } : null)}
-                className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-pink transition-colors"
-                placeholder="🔥 Ofertas Semanales"
-              />
+            {/* SECCIÓN 1: TEXTOS HERO */}
+            <div className="space-y-6">
+              <div className="bg-brand-bg border border-neon-pink/30 rounded-lg p-5">
+                <label className="block text-sm font-bold text-neon-pink mb-1.5 uppercase tracking-wider">Texto del Badge</label>
+                <input 
+                  type="text" 
+                  name="hero_badge_text"
+                  value={settings?.hero_badge_text || ""}
+                  onChange={(e) => setSettings(prev => prev ? { ...prev, hero_badge_text: e.target.value } : null)}
+                  className="w-full bg-brand-card border border-brand-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-pink transition-colors"
+                  placeholder="🔥 Ofertas Semanales"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Título Principal (Línea 1)</label>
+                <input 
+                  type="text" 
+                  name="hero_title_line1"
+                  value={settings?.hero_title_line1 || ""}
+                  onChange={(e) => setSettings(prev => prev ? { ...prev, hero_title_line1: e.target.value } : null)}
+                  className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-blue transition-colors font-display font-bold text-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Título Principal (Línea 2)</label>
+                <input 
+                  type="text" 
+                  name="hero_title_line2"
+                  value={settings?.hero_title_line2 || ""}
+                  onChange={(e) => setSettings(prev => prev ? { ...prev, hero_title_line2: e.target.value } : null)}
+                  className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-neon-purple focus:outline-none focus:border-neon-purple transition-colors font-display font-bold text-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Subtítulo Descriptivo</label>
+                <textarea 
+                  name="hero_subtitle"
+                  value={settings?.hero_subtitle || ""}
+                  onChange={(e) => setSettings(prev => prev ? { ...prev, hero_subtitle: e.target.value } : null)}
+                  rows={3}
+                  className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:border-neon-blue transition-colors resize-none"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Título Principal (Línea 1)</label>
-              <input 
-                type="text" 
-                name="hero_title_line1"
-                value={settings?.hero_title_line1 || ""}
-                onChange={(e) => setSettings(prev => prev ? { ...prev, hero_title_line1: e.target.value } : null)}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-blue transition-colors font-display font-bold text-lg"
-                placeholder="EL MEJOR CATÁLOGO"
-              />
+            {/* SECCIÓN 2: COMUNICACIÓN */}
+            <div className="pt-10 border-t border-brand-border space-y-6">
+              <h3 className="text-xl font-display font-bold text-white uppercase tracking-tighter italic">WhatsApp y Región</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">WhatsApp Argentina (Ej. 549...)</label>
+                  <input 
+                    type="text" 
+                    name="whatsapp_ar"
+                    value={settings?.whatsapp_ar || ""}
+                    onChange={(e) => setSettings(prev => prev ? { ...prev, whatsapp_ar: e.target.value } : null)}
+                    className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-blue transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">WhatsApp Rep. Dom. (Ej. 1809...)</label>
+                  <input 
+                    type="text" 
+                    name="whatsapp_rd"
+                    value={settings?.whatsapp_rd || ""}
+                    onChange={(e) => setSettings(prev => prev ? { ...prev, whatsapp_rd: e.target.value } : null)}
+                    className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-black/20 border border-white/5 rounded-xl p-6">
+                <label className="block text-sm font-black text-gray-400 mb-4 uppercase tracking-[0.2em] text-center">Región de Respaldo Global</label>
+                <div className="flex gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setSettings(prev => prev ? { ...prev, primary_region: 'AR' } : null)}
+                    className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase transition-all ${settings?.primary_region === 'AR' ? 'bg-neon-blue text-black shadow-[0_0_20px_rgba(0,242,255,0.4)]' : 'bg-white/5 text-gray-500 hover:text-white border border-white/5'}`}
+                  >
+                    Argentina
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setSettings(prev => prev ? { ...prev, primary_region: 'RD' } : null)}
+                    className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase transition-all ${settings?.primary_region === 'RD' ? 'bg-neon-purple text-white shadow-[0_0_20px_rgba(188,19,254,0.4)]' : 'bg-white/5 text-gray-500 hover:text-white border border-white/5'}`}
+                  >
+                    Rep. Dominicana
+                  </button>
+                  <input type="hidden" name="primary_region" value={settings?.primary_region || "RD"} />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Título Principal (Línea 2) <span className="text-neon-purple text-xs font-normal ml-2">Se mostrará con gradiente neón</span>
-              </label>
-              <input 
-                type="text" 
-                name="hero_title_line2"
-                value={settings?.hero_title_line2 || ""}
-                onChange={(e) => setSettings(prev => prev ? { ...prev, hero_title_line2: e.target.value } : null)}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-neon-purple focus:outline-none focus:border-neon-purple transition-colors font-display font-bold text-lg"
-                placeholder="DIGITAL PS4 & PS5"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Subtítulo Descriptivo</label>
-              <textarea 
-                name="hero_subtitle"
-                value={settings?.hero_subtitle || ""}
-                onChange={(e) => setSettings(prev => prev ? { ...prev, hero_subtitle: e.target.value } : null)}
-                rows={4}
-                className="w-full bg-brand-bg border border-brand-border rounded-lg px-4 py-2.5 text-gray-300 focus:outline-none focus:border-neon-blue transition-colors resize-none"
-                placeholder="Servicio rápido y confiable..."
-              />
-            </div>
-
-            <div className="pt-4 border-t border-brand-border flex justify-end">
+            <div className="pt-8 border-t border-brand-border flex justify-end">
               <button 
                 type="submit" 
                 disabled={isSaving}
-                className="bg-white text-black px-8 py-3 rounded-lg font-bold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-white text-black px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all disabled:opacity-50 flex items-center gap-3 shadow-xl"
               >
                 {isSaving ? (
                   <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
                 ) : (
                   <Save className="w-5 h-5" />
                 )}
-                {isSaving ? "Guardando..." : "Guardar Configuración"}
+                {isSaving ? "Guardando..." : "Actualizar Configuración General"}
               </button>
             </div>
-
           </form>
         </div>
       </div>

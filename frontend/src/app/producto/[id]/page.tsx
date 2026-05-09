@@ -19,12 +19,23 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       cache: 'no-store'
     });
     
-    // 2. Obtener TODOS los productos que tengan exactamente el mismo título
-    const records = await pb.collection("products").getList<Product>(1, 50, {
-      filter: `title = "${baseProduct.title}" && is_active = true`,
+    // 2. Obtener TODAS las variantes posibles
+    // Usamos una búsqueda aproximada (~) y luego filtramos en JS para mayor precisión
+    const searchRecords = await pb.collection("products").getList<Product>(1, 50, {
+      filter: `title ~ "${baseProduct.title.trim()}" && is_active = true`,
       cache: 'no-store'
     });
-    variants = records.items;
+
+    // Filtramos para asegurar que el título sea EL MISMO (normalizado)
+    const normalizedBaseTitle = baseProduct.title.trim().toLowerCase();
+    variants = searchRecords.items.filter(item => 
+      item.title.trim().toLowerCase() === normalizedBaseTitle
+    );
+    
+    // Si por alguna razón no se incluyó el baseProduct (no debería pasar), lo agregamos
+    if (!variants.some(v => v.id === baseProduct.id)) {
+      variants.push(baseProduct);
+    }
   } catch (error) {
     console.error("Error fetching product:", error);
     notFound();

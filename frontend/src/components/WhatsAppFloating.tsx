@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useSettings } from "@/context/SettingsContext";
 
 export default function WhatsAppFloating() {
-  const phone = "584241732650"; // Número del cliente
+  const { whatsappNumber } = useSettings();
+  const cleanPhone = whatsappNumber.replace(/\D/g, "");
   const message = encodeURIComponent("¡Hola! 👋 Necesito soporte con Aiden Play.");
-  const url = `https://wa.me/${phone}?text=${message}`;
+  const url = `https://wa.me/${cleanPhone}?text=${message}`;
 
   return (
     <motion.a

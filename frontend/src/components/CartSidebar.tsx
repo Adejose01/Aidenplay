@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
+import { useSettings } from "@/context/SettingsContext";
 import { formatPrice } from "@/lib/pocketbase";
 
 export default function CartSidebar() {
   const { items, isCartOpen, setIsCartOpen, removeFromCart, clearCart, totalArs, totalRd } = useCart();
+  const { region: detectedRegion, whatsappNumber } = useSettings();
   const [region, setRegion] = useState<'AR' | 'RD' | null>(null);
+
+  // Sincronizar región detectada al abrir el carrito por primera vez si no hay una seleccionada
+  useEffect(() => {
+    if (detectedRegion && !region) {
+      setRegion(detectedRegion);
+    }
+  }, [detectedRegion, region]);
 
   if (!isCartOpen) return null;
 
@@ -14,7 +23,7 @@ export default function CartSidebar() {
   const handleCheckout = () => {
     if (!region) return;
 
-    const number = "584241732650"; // Número de la tienda
+    const number = whatsappNumber; 
     const regionName = region === 'AR' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴';
     const total = region === 'AR' ? `AR$ ${formatPrice(totalArs)}` : `RD$ ${formatPrice(totalRd)}`;
 

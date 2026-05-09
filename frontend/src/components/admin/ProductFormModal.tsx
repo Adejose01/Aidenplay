@@ -172,6 +172,7 @@ export default function ProductFormModal({ product, onClose, onSave }: ProductFo
                   <option value="PS4">Juegos PS4</option>
                   <option value="PS_PLUS">Suscripciones PS Plus</option>
                   <option value="STREAMING">Cuentas Streaming</option>
+                  <option value="NINTENDO">Nintendo Switch</option>
                 </select>
               </div>
               <div>

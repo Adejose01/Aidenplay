@@ -11,7 +11,7 @@ import type { RecordModel } from "pocketbase";
 export interface Product extends RecordModel {
   title: string;
   description: string;
-  category: "PS4" | "PS5" | "PS_PLUS" | "STREAMING";
+  category: "PS4" | "PS5" | "PS_PLUS" | "STREAMING" | "NINTENDO";
   account_type: "Primaria" | "Secundaria" | "Suscripcion";
   price_usd: number;
   price_ar: number;
@@ -32,6 +32,9 @@ export interface SiteSettings extends RecordModel {
   hero_badge_text: string;
   exchange_rate_ars: number;
   exchange_rate_rd: number;
+  whatsapp_ar?: string;
+  whatsapp_rd?: string;
+  primary_region?: "AR" | "RD";
 }
 
 /**
@@ -51,3 +54,14 @@ export interface CategoryInfo {
   borderHover: string;
   glowActive?: boolean;
 }
+
+/**
+ * Mapeo de categorías a colores de badge (Tailwind classes).
+ */
+export const CATEGORY_COLORS: Record<string, string> = {
+  PS4: "bg-[#003791]",
+  PS5: "bg-[#0072CE]",
+  PS_PLUS: "bg-yellow-600",
+  STREAMING: "bg-pink-600",
+  NINTENDO: "bg-[#E60012]",
+};

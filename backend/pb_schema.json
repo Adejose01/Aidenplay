@@ -34,7 +34,8 @@
             "PS4",
             "PS5",
             "PS_PLUS",
-            "STREAMING"
+            "STREAMING",
+            "NINTENDO"
           ]
         }
       },
@@ -190,6 +191,38 @@
           "min": 0,
           "max": null,
           "noDecimal": false
+        }
+      },
+      {
+        "name": "whatsapp_ar",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "whatsapp_rd",
+        "type": "text",
+        "required": false,
+        "options": {
+          "min": null,
+          "max": null,
+          "pattern": ""
+        }
+      },
+      {
+        "name": "primary_region",
+        "type": "select",
+        "required": false,
+        "options": {
+          "maxSelect": 1,
+          "values": [
+            "AR",
+            "RD"
+          ]
         }
       }
     ],

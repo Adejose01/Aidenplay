@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/pocketbase";
 
 export default function CartSidebar() {
   const { items, isCartOpen, setIsCartOpen, removeFromCart, clearCart, totalArs, totalRd } = useCart();
-  const { region: detectedRegion, whatsappNumber } = useSettings();
+  const { region: detectedRegion, whatsappNumber, settings } = useSettings();
   const [region, setRegion] = useState<'AR' | 'RD' | null>(null);
 
   // Sincronizar región detectada al abrir el carrito por primera vez si no hay una seleccionada

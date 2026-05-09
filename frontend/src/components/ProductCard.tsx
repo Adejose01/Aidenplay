@@ -19,12 +19,13 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
   const { settings, region: detectedRegion, whatsappNumber } = useSettings();
   const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD' | null>(null);
 
-  // Auto-seleccionar moneda según región detectada
+  // Auto-seleccionar moneda según región detectada (Solo al inicio)
   useEffect(() => {
     if (detectedRegion && !selectedCurrency) {
       setSelectedCurrency(detectedRegion === 'AR' ? 'ARS' : 'RD');
     }
-  }, [detectedRegion, selectedCurrency]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detectedRegion]);
   
   const currentRates = rates || { ars: 1415, rd: 58 };
   const imageUrl = getFileUrl(product, "cover_image", { thumb: "400x300" });

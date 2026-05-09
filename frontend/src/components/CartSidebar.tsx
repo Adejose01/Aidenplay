@@ -21,9 +21,20 @@ export default function CartSidebar() {
 
   // Enviar pedido por WhatsApp
   const handleCheckout = () => {
-    if (!region) return;
+    if (!region || !settings) return;
 
-    const number = whatsappNumber; 
+    // Seleccionar el número correcto basado en la región elegida en el carrito
+    const rawNumber = region === 'AR' 
+      ? (settings.whatsapp_ar || "") 
+      : (settings.whatsapp_rd || "");
+      
+    const number = rawNumber.replace(/\D/g, ""); // Limpiar espacios y símbolos
+    
+    if (!number) {
+      alert("Lo sentimos, no hay un número de contacto configurado para esta región.");
+      return;
+    }
+
     const regionName = region === 'AR' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴';
     const total = region === 'AR' ? `AR$ ${formatPrice(totalArs)}` : `RD$ ${formatPrice(totalRd)}`;
 

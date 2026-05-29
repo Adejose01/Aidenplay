@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Zap, ArrowLeft } from "lucide-react";
 import type { Product } from "@/types";
 import { getFileUrl, formatPrice, buildWhatsAppLink } from "@/lib/pocketbase";
 import AddToCartButton from "@/components/AddToCartButton";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useSettings } from "@/context/SettingsContext";
 
 interface ProductDetailsProps {
@@ -18,17 +18,9 @@ interface ProductDetailsProps {
 
 export default function ProductDetails({ variants, rates, baseProduct }: ProductDetailsProps) {
   const router = useRouter();
-  const { settings, region: detectedRegion, whatsappNumber } = useSettings();
-  const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD'>('ARS');
+  const { settings, country, whatsappNumber, loading } = useSettings();
 
-  // 1. Auto-seleccionar moneda según región
-  useEffect(() => {
-    if (detectedRegion && !selectedCurrency) {
-      setSelectedCurrency(detectedRegion === 'AR' ? 'ARS' : 'RD');
-    }
-  }, [detectedRegion, selectedCurrency]);
-  
-  // 2. Extraer opciones únicas de las variantes
+  // 1. Extraer opciones únicas de las variantes
   const availablePlatforms = useMemo(() => {
     const platforms = ["PS4", "PS5", "NINTENDO"].filter(p => variants.some(v => v.category === p));
     return platforms;
@@ -39,11 +31,11 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
     return types;
   }, [variants]);
 
-  // 3. Estados de selección
+  // 2. Estados de selección (re-añadidos los faltantes)
   const [selectedPlatform, setSelectedPlatform] = useState<string>(baseProduct.category);
   const [selectedAccountType, setSelectedAccountType] = useState<string>(baseProduct.account_type);
 
-  // 4. LÓGICA DE AUTO-SELECCIÓN: Si cambio de plataforma y la licencia no existe, busco la primera disponible
+  // 3. LÓGICA DE AUTO-SELECCIÓN: Si cambio de plataforma y la licencia no existe, busco la primera disponible
   const handlePlatformChange = (platform: string) => {
     setSelectedPlatform(platform);
     const exists = variants.some(v => v.category === platform && v.account_type === selectedAccountType);
@@ -55,33 +47,35 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
     }
   };
 
-  // 5. Estado Derivado: Producto Exacto
+  // 4. Estado Derivado: Producto Exacto
   const currentVariant = useMemo(() => {
     return variants.find(v => v.category === selectedPlatform && v.account_type === selectedAccountType) || null;
   }, [variants, selectedPlatform, selectedAccountType]);
 
   const isNintendo = selectedPlatform === "NINTENDO";
 
-  // 6. Precios dinámicos (Priorizar precio directo de la DB si existe)
+  // 5. Precios dinámicos (Priorizar precio directo de la DB si existe)
   const currentPrice = useMemo(() => {
     if (!currentVariant) return 0;
     
-    if (selectedCurrency === 'ARS') {
-      // Si tiene precio ARS directo en DB (> 0), usarlo. Si no, calcular desde USD.
+    if (country === 'AR') {
       return currentVariant.price_ar > 0 
         ? currentVariant.price_ar 
         : Math.round((currentVariant.price_usd || 0) * rates.ars);
-    } else {
-      // Si tiene precio RD directo en DB (> 0), usarlo. Si no, calcular desde USD.
+    } else if (country === 'DO') {
       return currentVariant.price_rd > 0 
         ? currentVariant.price_rd 
         : Math.round((currentVariant.price_usd || 0) * rates.rd);
+    } else {
+      return currentVariant.price_usd || 0;
     }
-  }, [currentVariant, selectedCurrency, rates]);
+  }, [currentVariant, country, rates]);
+
+  const currentSymbol = country === 'AR' ? 'AR$' : country === 'DO' ? 'RD$' : 'US$';
+  const currentCurrency = country === 'AR' ? 'ARS' : country === 'DO' ? 'RD' : 'USD';
 
   const priceARS = currentVariant?.price_ar || Math.round((currentVariant?.price_usd || 0) * rates.ars);
   const priceRD = currentVariant?.price_rd || Math.round((currentVariant?.price_usd || 0) * rates.rd);
-  const currentSymbol = selectedCurrency === 'ARS' ? 'AR$' : 'RD$';
 
   const imageUrl = getFileUrl(baseProduct, "cover_image");
 
@@ -202,21 +196,13 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-baseline gap-2">
                   <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{currentSymbol}</span>
-                  <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                    {currentVariant ? formatPrice(currentPrice) : "---"}
-                  </span>
-                </div>
-                
-                <div className="flex bg-black/30 p-1 rounded-xl border border-white/5">
-                  {['ARS', 'RD'].map(curr => (
-                    <button 
-                      key={curr}
-                      onClick={() => setSelectedCurrency(curr as any)}
-                      className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase transition-all ${selectedCurrency === curr ? (isNintendo ? 'bg-[#E60012] text-white' : 'bg-neon-blue text-black') : 'text-gray-500 hover:text-white'}`}
-                    >
-                      {curr === 'ARS' ? 'ARS' : 'RD$'}
-                    </button>
-                  ))}
+                  {loading ? (
+                    <div className="animate-pulse bg-white/10 h-10 w-32 rounded-xl"></div>
+                  ) : (
+                    <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                      {currentVariant ? formatPrice(currentPrice) : "---"}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -225,24 +211,26 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
                 {currentVariant ? (
                   <>
                     <AddToCartButton product={currentVariant} calculatedArs={priceARS} calculatedRd={priceRD} />
-                    <motion.a
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      href={buildWhatsAppLink(
-                        currentVariant.title,
-                        currentPrice,
-                        selectedCurrency,
-                        currentVariant.category,
-                        currentVariant.account_type,
-                        selectedCurrency === 'ARS' ? (settings?.whatsapp_ar || whatsappNumber) : (settings?.whatsapp_rd || whatsappNumber)
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 rounded-xl text-[10px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-[#25D366]/20"
-                    >
-                      <Zap className="w-4 h-4 fill-white" />
-                      Compra Rápida
-                    </motion.a>
+                    {!loading && (
+                      <motion.a
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        href={buildWhatsAppLink(
+                          currentVariant.title,
+                          currentPrice,
+                          currentCurrency,
+                          currentVariant.category,
+                          currentVariant.account_type,
+                          whatsappNumber
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 rounded-xl text-[10px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-[#25D366]/20"
+                      >
+                        <Zap className="w-4 h-4 fill-white" />
+                        Compra Rápida
+                      </motion.a>
+                    )}
                   </>
                 ) : (
                   <div className="col-span-2 bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">

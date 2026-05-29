@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Zap, Eye } from "lucide-react";
@@ -16,35 +15,41 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, rates }: ProductCardProps) {
-  const { settings, region: detectedRegion, whatsappNumber } = useSettings();
-  const [selectedCurrency, setSelectedCurrency] = useState<'ARS' | 'RD' | null>(null);
-
-  // Auto-seleccionar moneda según región detectada (Solo al inicio)
-  useEffect(() => {
-    if (detectedRegion && !selectedCurrency) {
-      setSelectedCurrency(detectedRegion === 'AR' ? 'ARS' : 'RD');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detectedRegion]);
+  const { settings, country, whatsappNumber, loading } = useSettings();
   
   const currentRates = rates || { ars: 1415, rd: 58 };
   const imageUrl = getFileUrl(product, "cover_image", { thumb: "400x300" });
   
-  // Cálculo dinámico basado en precio USD y tasas
+  // Cálculo dinámico para AddToCart
   const usdPrice = product.price_usd || 0;
   const priceARS = Math.round(usdPrice * currentRates.ars);
   const priceRD = Math.round(usdPrice * currentRates.rd);
 
-  const currentPrice = selectedCurrency === 'ARS' ? priceARS : selectedCurrency === 'RD' ? priceRD : 0;
-  const currentSymbol = selectedCurrency === 'ARS' ? 'AR$' : 'RD$';
+  let currentPrice = 0;
+  let currentSymbol = "";
+  let currentCurrency: 'ARS' | 'RD' | 'USD' = 'USD';
+
+  if (country === "AR") {
+    currentPrice = product.price_ar > 0 ? product.price_ar : priceARS;
+    currentSymbol = "AR$";
+    currentCurrency = "ARS";
+  } else if (country === "DO") {
+    currentPrice = product.price_rd > 0 ? product.price_rd : priceRD;
+    currentSymbol = "RD$";
+    currentCurrency = "RD";
+  } else {
+    currentPrice = usdPrice;
+    currentSymbol = "US$";
+    currentCurrency = "USD";
+  }
 
   const whatsAppUrl = buildWhatsAppLink(
     product.title,
     currentPrice,
-    selectedCurrency || 'ARS',
+    currentCurrency,
     product.category,
     product.account_type,
-    selectedCurrency === 'ARS' ? (settings?.whatsapp_ar || whatsappNumber) : (settings?.whatsapp_rd || whatsappNumber)
+    whatsappNumber
   );
 
   return (
@@ -109,42 +114,14 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
         </p>
 
         {/* Bloque de precios */}
-        <div className="mb-3 sm:mb-4 min-h-[80px] sm:min-h-[90px] flex flex-col justify-center">
-          {selectedCurrency === null ? (
-            <button
-              onClick={() => setSelectedCurrency('ARS')}
-              className="w-full py-2.5 sm:py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white font-black text-[9px] sm:text-[10px] uppercase tracking-wider sm:tracking-[0.2em] transition-all"
-            >
-              Ver Precio
-            </button>
+        <div className="mb-3 sm:mb-4 min-h-[50px] sm:min-h-[60px] flex flex-col justify-center">
+          {loading ? (
+            <div className="animate-pulse bg-white/10 h-8 rounded-xl w-32"></div>
           ) : (
-            <div className="bg-black/40 backdrop-blur-md rounded-xl p-2 sm:p-3 border border-white/5 animate-in fade-in zoom-in-95 duration-300">
-              <div className="flex bg-white/5 p-1 rounded-lg mb-2 sm:mb-3">
-                <button 
-                  onClick={() => setSelectedCurrency('ARS')}
-                  className={`flex-1 py-1.5 sm:py-2 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${selectedCurrency === 'ARS' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
-                >
-                  ARG
-                </button>
-                <button 
-                  onClick={() => setSelectedCurrency('RD')}
-                  className={`flex-1 py-1.5 sm:py-2 rounded-md text-[8px] sm:text-[9px] font-black uppercase transition-all ${selectedCurrency === 'RD' ? 'bg-white text-black' : 'text-gray-500 hover:text-white'}`}
-                >
-                  RD
-                </button>
-              </div>
-
-              <div className="flex justify-between items-center px-0.5 sm:px-1">
-                <span className="font-black text-sm sm:text-xl text-white tracking-tighter">
-                  {currentSymbol} {formatPrice(currentPrice)}
-                </span>
-                <button 
-                  onClick={() => setSelectedCurrency(null)}
-                  className="text-[8px] sm:text-[10px] text-gray-500 hover:text-white uppercase font-black transition-colors"
-                >
-                  X
-                </button>
-              </div>
+            <div className="bg-black/40 backdrop-blur-md rounded-xl p-2 sm:p-3 border border-white/5 flex items-center">
+              <span className="font-black text-sm sm:text-xl text-white tracking-tighter">
+                {currentSymbol} {formatPrice(currentPrice)}
+              </span>
             </div>
           )}
         </div>
@@ -153,7 +130,7 @@ export default function ProductCard({ product, rates }: ProductCardProps) {
         <div className="mt-auto flex flex-col gap-2">
           <AddToCartButton product={product} calculatedArs={priceARS} calculatedRd={priceRD} />
 
-          {selectedCurrency && (
+          {!loading && (
             <button
               onClick={() => {
                 window.open(whatsAppUrl, "_blank");

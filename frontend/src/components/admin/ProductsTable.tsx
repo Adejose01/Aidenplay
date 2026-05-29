@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { pb, getFileUrl, formatPrice } from "@/lib/pocketbase";
 import type { Product } from "@/types";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit3, Image as ImageIcon, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Trash2, Edit3, Image as ImageIcon, CheckCircle, XCircle, Search } from "lucide-react";
 import ProductFormModal from "./ProductFormModal";
 
 export default function ProductsTable() {
@@ -12,6 +12,16 @@ export default function ProductsTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch = searchQuery === "" || p.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === "ALL" || p.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, categoryFilter]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -81,6 +91,32 @@ export default function ProductsTable() {
         </button>
       </div>
 
+      {/* Filtros: Búsqueda + Categoría */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-brand-card border border-brand-border rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:border-neon-blue focus:outline-none transition-colors"
+          />
+        </div>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="bg-brand-card border border-brand-border rounded-lg px-4 py-2.5 text-sm text-white focus:border-neon-blue focus:outline-none transition-colors cursor-pointer appearance-none min-w-[160px]"
+        >
+          <option value="ALL">Todas las categorías</option>
+          <option value="PS4">PS4</option>
+          <option value="PS5">PS5</option>
+          <option value="PS_PLUS">PS Plus</option>
+          <option value="STREAMING">Streaming</option>
+          <option value="NINTENDO">Nintendo</option>
+        </select>
+      </div>
+
       <div className="bg-brand-card border border-brand-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -100,14 +136,14 @@ export default function ProductsTable() {
                     Cargando productos...
                   </td>
                 </tr>
-              ) : products.length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-gray-500">
-                    No hay productos registrados.
+                    {searchQuery || categoryFilter !== "ALL" ? "No se encontraron productos con esos filtros." : "No hay productos registrados."}
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
+                filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="p-3 sm:p-4">
                       <div className="flex items-center gap-2 sm:gap-3">

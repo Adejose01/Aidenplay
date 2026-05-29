@@ -7,6 +7,7 @@ import type { SiteSettings } from "@/types";
 interface SettingsContextType {
   settings: SiteSettings | null;
   region: "AR" | "RD";
+  country: "AR" | "DO" | "OTHER";
   whatsappNumber: string;
   loading: boolean;
 }
@@ -15,7 +16,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [region, setRegion] = useState<"AR" | "RD" | null>(null); 
+  const [country, setCountry] = useState<"AR" | "DO" | "OTHER" | null>(null);
   const [loading, setLoading] = useState(true);
   const DEFAULT_PHONE = ""; // Respaldo vacío para forzar uso de DB
 
@@ -33,13 +34,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         if (geoResponse && geoResponse.ok) {
           const geoData = await geoResponse.json();
           if (geoData.country_code === "AR") {
-            setRegion("AR");
+            setCountry("AR");
+          } else if (geoData.country_code === "DO") {
+            setCountry("DO");
           } else {
-            setRegion("RD");
+            setCountry("OTHER");
           }
+        } else {
+          setCountry("OTHER");
         }
       } catch (error) {
         console.warn("⚠️ Error en detección de región o carga de settings:", error);
+        setCountry("OTHER");
       } finally {
         setLoading(false);
       }
@@ -48,19 +54,32 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     loadData();
   }, []);
 
-  // Lógica de número dinámico con respaldo general configurable
-  const getDynamicRegion = () => {
-    if (region) return region; // Si la IP detectó algo, manda la IP
-    return settings?.primary_region || "RD"; // Si no hay IP, manda la región primaria (RD por defecto)
+  // Lógica de región para WhatsApp (mantiene compatibilidad: AR → AR, todo lo demás → RD)
+  const getDynamicRegion = (): "AR" | "RD" => {
+    if (country === "AR") return "AR";
+    if (country === "DO" || country === "OTHER") return "RD";
+    return settings?.primary_region || "RD";
   };
 
-  const finalRegion = getDynamicRegion();
-  const whatsappNumber = finalRegion === "AR" 
-    ? (settings?.whatsapp_ar || DEFAULT_PHONE)
-    : (settings?.whatsapp_rd || DEFAULT_PHONE);
+  // País real detectado (para precios)
+  const getDynamicCountry = (): "AR" | "DO" | "OTHER" => {
+    if (country) return country;
+    return "OTHER"; // Fallback absoluto a USD
+  };
+
+  const finalCountry = getDynamicCountry();
+  
+  // Lógica del número de WhatsApp: Si es AR o DO, usa el suyo. Si es OTHER, usa el primary_region
+  const getWhatsAppNumber = () => {
+    if (finalCountry === "AR") return settings?.whatsapp_ar || DEFAULT_PHONE;
+    if (finalCountry === "DO") return settings?.whatsapp_rd || DEFAULT_PHONE;
+    return settings?.primary_region === "AR" ? (settings?.whatsapp_ar || DEFAULT_PHONE) : (settings?.whatsapp_rd || DEFAULT_PHONE);
+  };
+
+  const whatsappNumber = getWhatsAppNumber();
 
   return (
-    <SettingsContext.Provider value={{ settings, region: finalRegion, whatsappNumber, loading }}>
+    <SettingsContext.Provider value={{ settings, region: finalCountry === "AR" ? "AR" : "RD", country: finalCountry, whatsappNumber, loading }}>
       {children}
     </SettingsContext.Provider>
   );

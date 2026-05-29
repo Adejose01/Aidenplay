@@ -78,13 +78,13 @@ export function formatPrice(price: number): string {
 export function buildWhatsAppLink(
   productTitle: string,
   price: number,
-  currency: 'ARS' | 'RD',
+  currency: 'ARS' | 'RD' | 'USD',
   category: string,
   accountType: string,
   phone: string = "584241732650"
 ): string {
-  const regionName = currency === 'ARS' ? 'Argentina 🇦🇷' : 'Rep. Dominicana 🇩🇴';
-  const symbol = currency === 'ARS' ? 'AR$' : 'RD$';
+  const regionName = currency === 'ARS' ? 'Argentina 🇦🇷' : currency === 'RD' ? 'Rep. Dominicana 🇩🇴' : 'Internacional 🌍';
+  const symbol = currency === 'ARS' ? 'AR$' : currency === 'RD' ? 'RD$' : 'US$';
 
   const message = encodeURIComponent(
     `¡Hola! 👋 Vengo desde *${regionName}* y quiero comprar:\n\n` +

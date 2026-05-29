@@ -29,8 +29,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           setSettings(siteSettings);
         }
 
-        // 2. Detección de IP (Geolocalización)
-        const geoResponse = await fetch("https://get.geojs.io/v1/ip/country.json").catch(() => null);
+        // 2. Detección de IP (Server-Side)
+        const geoResponse = await fetch("/api/geo", { cache: "no-store" }).catch(() => null);
         
         if (geoResponse && geoResponse.ok) {
           const geoData = await geoResponse.json();

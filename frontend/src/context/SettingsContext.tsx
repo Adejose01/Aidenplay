@@ -30,7 +30,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
 
         // 2. Detección de IP (Server-Side)
-        const geoResponse = await fetch("/api/geo", { cache: "no-store" }).catch(() => null);
+        const geoResponse = await fetch("/geo-detect", { cache: "no-store" }).catch(() => null);
         
         if (geoResponse && geoResponse.ok) {
           const geoData = await geoResponse.json();

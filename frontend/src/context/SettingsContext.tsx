@@ -30,12 +30,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
 
         // 2. Detección de IP (Geolocalización)
-        const geoResponse = await fetch("https://ipapi.co/json/").catch(() => null);
+        const geoResponse = await fetch("https://ip.guide/").catch(() => null);
         if (geoResponse && geoResponse.ok) {
           const geoData = await geoResponse.json();
-          if (geoData.country_code === "AR") {
+          const countryCode = geoData?.network?.autonomous_system?.country || geoData?.location?.country || geoData?.country_code;
+          if (countryCode === "AR") {
             setCountry("AR");
-          } else if (geoData.country_code === "DO") {
+          } else if (countryCode === "DO") {
             setCountry("DO");
           } else {
             setCountry("OTHER");

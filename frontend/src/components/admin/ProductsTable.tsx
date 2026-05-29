@@ -6,8 +6,10 @@ import type { Product } from "@/types";
 import { toast } from "sonner";
 import { Plus, Trash2, Edit3, Image as ImageIcon, CheckCircle, XCircle, Search } from "lucide-react";
 import ProductFormModal from "./ProductFormModal";
+import { useSettings } from "@/context/SettingsContext";
 
 export default function ProductsTable() {
+  const { settings } = useSettings();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,6 +203,10 @@ export default function ProductsTable() {
                           }}
                           className="w-full bg-brand-bg border border-brand-border rounded px-1.5 py-1 sm:px-2 sm:py-1.5 pl-4 sm:pl-6 text-white text-xs sm:text-sm focus:border-neon-blue focus:outline-none transition-colors"
                         />
+                      </div>
+                      <div className="text-[10px] text-gray-400 mt-1 flex flex-col pl-1">
+                        <span>AR$: {formatPrice((product.price_usd || 0) * (settings?.exchange_rate_ars || 0))}</span>
+                        <span>RD$: {formatPrice((product.price_usd || 0) * (settings?.exchange_rate_rd || 0))}</span>
                       </div>
                     </td>
                     <td className="p-3 sm:p-4 text-center hidden md:table-cell">

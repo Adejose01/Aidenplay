@@ -30,10 +30,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
 
         // 2. Detección de IP (Geolocalización)
-        const geoResponse = await fetch("https://ip.guide/").catch(() => null);
+        const geoResponse = await fetch("https://get.geojs.io/v1/ip/country.json").catch(() => null);
+        
         if (geoResponse && geoResponse.ok) {
           const geoData = await geoResponse.json();
-          const countryCode = geoData?.network?.autonomous_system?.country || geoData?.location?.country || geoData?.country_code;
+          const countryCode = geoData?.country;
+          
           if (countryCode === "AR") {
             setCountry("AR");
           } else if (countryCode === "DO") {
@@ -45,7 +47,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           setCountry("OTHER");
         }
       } catch (error) {
-        console.warn("⚠️ Error en detección de región o carga de settings:", error);
+        console.error("Error en detección de región o carga de settings:", error);
         setCountry("OTHER");
       } finally {
         setLoading(false);

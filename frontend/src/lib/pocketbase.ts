@@ -121,20 +121,21 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
  * Obtiene productos activos filtrados por categoría.
  */
 export async function getProductsByCategory(
-  category: string
-): Promise<Product[]> {
+  category: string,
+  page: number = 1
+): Promise<{ items: Product[], totalPages: number }> {
   try {
     const records = await pb
       .collection("products")
-      .getList<Product>(1, 50, {
+      .getList<Product>(page, 50, {
         filter: `category = '${category}' && is_active = true`,
         sort: "-is_featured,-created",
         fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' })
       });
-    return records.items;
+    return { items: records.items, totalPages: records.totalPages };
   } catch {
     console.warn(`⚠️ No se pudieron obtener productos (${category})`);
-    return [];
+    return { items: [], totalPages: 1 };
   }
 }
 

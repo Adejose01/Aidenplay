@@ -129,9 +129,9 @@ export default function ProductDetails({ variants, rates, baseProduct }: Product
             <h1 className="text-3xl md:text-5xl font-display font-black text-white mb-3 leading-tight tracking-tight uppercase">
               {baseProduct.title}
             </h1>
-            <p className="text-gray-500 text-xs md:text-sm mb-8 leading-relaxed font-medium max-w-md line-clamp-3">
+            <div className="text-gray-400 text-xs md:text-sm mb-8 leading-relaxed font-medium max-w-md max-h-40 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent whitespace-pre-wrap">
               {baseProduct.description}
-            </p>
+            </div>
 
             {/* Selectores */}
             <div className="space-y-6 mb-10">
